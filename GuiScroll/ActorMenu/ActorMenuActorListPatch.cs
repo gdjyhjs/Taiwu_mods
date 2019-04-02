@@ -17,19 +17,6 @@ namespace GuiScroll
             GameObject updateActorMenu = new GameObject();
             GameObject.DontDestroyOnLoad(updateActorMenu);
             ActorMenuActorListPatch.updateActorMenu = updateActorMenu.AddComponent<IEnumeratorActorMenuOpend>();
-
-            //增加点击事件
-            GameObject health = ActorMenu.instance.healthText.gameObject;
-            Button btn = health.GetComponent<Button>();
-            if (!btn)
-            {
-                btn = health.AddComponent<Button>();
-            }
-            var onclick = btn.onClick;
-            onclick.RemoveAllListeners();
-            onclick.AddListener(delegate {
-                ActorMenuInjuryPatch.AddHealth();
-            });
         }
 
         public static bool isShowActorMenu
@@ -129,6 +116,8 @@ namespace GuiScroll
                 mm = value;
             }
         }
+        public static Transform tf_RemoveALLItemDrop;
+        public static Transform tf_RemoveAItemDrop;
         private static void InitGuiUI()
         {
             // Main.Logger.Log("初始化 NewActor mm begin");
@@ -136,6 +125,121 @@ namespace GuiScroll
             mm = ActorMenu.instance.listActorsHolder.parent.parent.gameObject.AddComponent<NewActorListScroll>();
             mm.Init();
             // Main.Logger.Log("初始化 NewActor mm end");
+
+            //增加点击事件
+
+
+            //GameObject health = ActorMenu.instance.healthText.gameObject;
+            //Button btn = health.GetComponent<Button>();
+            //if (!btn)
+            //{
+            //    btn = health.AddComponent<Button>();
+            //}
+            //var onclick = btn.onClick;
+            //onclick.RemoveAllListeners();
+            //onclick.AddListener(delegate
+            //{
+            //    ActorMenuInjuryPatch.AddHealth();
+            //});
+
+
+            GameObject health1 = ActorMenu.instance.healthText.gameObject;
+            Button btn1 = health1.GetComponent<Button>();
+            if (!btn1)
+            {
+                btn1 = health1.AddComponent<Button>();
+            }
+            var onclick1 = btn1.onClick;
+            onclick1.RemoveAllListeners();
+            onclick1.AddListener(delegate
+            {
+                ActorMenuInjuryPatch.AddHealth();
+            });
+
+
+            //GameObject health2 = ActorMenu.instance.peopleHealthText.gameObject;
+            //Button btn2 = health2.GetComponent<Button>();
+            //if (!btn2)
+            //{
+            //    btn2 = health2.AddComponent<Button>();
+            //}
+            //var onclick2 = btn2.onClick;
+            //onclick2.RemoveAllListeners();
+            //onclick2.AddListener(delegate
+            //{
+            //    ActorMenuInjuryPatch.AddHealth();
+            //});
+
+
+            GameObject health3 = ActorMenu.instance.itemActorHealth.gameObject;
+            Button btn3 = health3.GetComponent<Button>();
+            if (!btn3)
+            {
+                btn3 = health3.AddComponent<Button>();
+            }
+            var onclick3 = btn3.onClick;
+            onclick3.RemoveAllListeners();
+            onclick3.AddListener(delegate
+            {
+                ActorMenuInjuryPatch.AddHealth();
+            });
+
+            string[] namelist = new string[] {
+                "HpBarIcon,26",
+                "SpBarIcon,27",
+                "MianQiLevelText,758",
+                "PoisonDrop",
+                "PoisonIcon,0",
+                "PoisonIcon,1",
+                "PoisonIcon,2",
+                "PoisonIcon,3",
+                "PoisonIcon,4",
+                "PoisonIcon,5",
+            };
+            Transform[] transforms = new Transform[namelist.Length];
+            GuiBaseUI.Main.FindChild(ActorMenu.instance.actorMenu.transform, namelist, transforms);
+            for (int i = 0; i < transforms.Length; i++)
+            {
+                GameObject go = transforms[i].gameObject;
+                Button btn2 = go.GetComponent<Button>();
+                if (!btn2)
+                {
+                    btn2 = go.AddComponent<Button>();
+                }
+                var onclick2 = btn2.onClick;
+                onclick2.RemoveAllListeners();
+                onclick2.AddListener(delegate
+                {
+                    switch (go.name)
+                    {
+                        case "HpBarIcon,26":
+                            ActorMenuInjuryPatch.OnClickInjury(-1, 1);
+                            break;
+                        case "SpBarIcon,27":
+                            ActorMenuInjuryPatch.OnClickInjury(-1, 2);
+                            break;
+                        case "MianQiLevelText,758":
+                            ActorMenuInjuryPatch.AddMianQi();
+                            break;
+                        case "PoisonDrop":
+                            ActorMenuInjuryPatch.AddPoison(-1);
+                            break;
+                        case "PoisonIcon,0":
+                        case "PoisonIcon,1":
+                        case "PoisonIcon,2":
+                        case "PoisonIcon,3":
+                        case "PoisonIcon,4":
+                        case "PoisonIcon,5":
+                            ActorMenuInjuryPatch.AddPoison(DateFile.instance.ParseInt(go.name.Split(',')[1]));
+                            break;
+                    }
+                });
+            }
+            GameObject.FindObjectOfType<Canvas>();
+
+            tf_RemoveALLItemDrop = GuiBaseUI.Main.FindChild(ActorMenu.instance.actorMenu.transform, "RemoveALLItemDrop");
+
+            tf_RemoveAItemDrop = GuiBaseUI.Main.FindChild(ActorMenu.instance.actorMenu.transform, "RemoveAItemDrop");
         }
 
 

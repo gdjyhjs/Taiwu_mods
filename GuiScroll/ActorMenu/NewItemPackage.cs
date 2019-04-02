@@ -8,6 +8,11 @@ namespace GuiScroll
 {
     public class NewItemPackage : MonoBehaviour
     {
+
+
+        public static bool tishi_drop = true;//提示丢弃物品
+        public static bool tishi_take = true;//提示拿同道物品
+
         public static int lineCount = 9;
         BigDataScroll bigDataScroll;
         public ScrollRect scrollRect;
@@ -219,7 +224,56 @@ namespace GuiScroll
             }
         }
 
-        public static void ClickItem(int itemId, SetItem setItem, bool onEquip = false)
+        private static void ClickYes(int itemId, SetItem setItem, bool onEquip, bool tishi, bool click_ctrl, bool click_shift, int actorId,int giveId,Vector3 start, Vector3 target,Sprite sprite)
+        {
+            int id = OnClick.instance.ID;
+            // Main.Logger.Log("点击了确认按钮:" + id);
+            if (id == 1554033136|| 1554033137 == id)
+            {
+                RemoveBind();
+                if (1554033136 == id) // 拆解物品
+                {
+                    IconMove.Move(start, target, 20, sprite);
+                    DiscardItem(actorId, itemId, click_shift);
+                    if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                    {
+                        tishi_drop = false;
+                    }
+                }
+                else if (1554033137 == id) // 拿同道物品
+                {
+                    IconMove.Move(start, target, 20, sprite);
+                    SaveItem(giveId, actorId, itemId, click_shift);
+                    if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                    {
+                        tishi_take = false;
+                    }
+                }
+            }
+        }
+
+        private static void ClickNo()
+        {
+            int id = OnClick.instance.ID;
+            // Main.Logger.Log("点击了取消按钮:" + id);
+            if (id == 1554033136|| 1554033137 == id)
+            {
+                RemoveBind();
+            }
+        }
+
+        private static void RemoveBind()
+        {
+            Button okbtn = YesOrNoWindow.instance.yesOrNoWindow.Find("YesButton").GetComponent<Button>();
+            okbtn.onClick.RemoveAllListeners();
+            Button nobtn = YesOrNoWindow.instance.yesOrNoWindow.Find("NoButton").GetComponent<Button>();
+            nobtn.onClick.RemoveAllListeners();
+        }
+
+
+
+
+        public static void ClickItem(int itemId, SetItem setItem, bool onEquip = false, bool tishi = true)
         {
 
             int actorId = ActorMenuActorListPatch.acotrId;
@@ -242,8 +296,7 @@ namespace GuiScroll
                 //{
                 // Main.Logger.Log(actorId + "暂存" + giveId + "物品" + itemId);
 
-                Vector3 start, target = new Vector3(-1000, 0, 0);
-                start = setItem.transform.position;
+                Vector3 start = setItem.transform.position, target = new Vector3(-1000, 0, 0);
                 bool get_target = false;
                 Sprite sprite = setItem.itemIcon.GetComponent<Image>().sprite;
                 int star_id = 0, end_id = 0;
@@ -307,12 +360,11 @@ namespace GuiScroll
                 }
                 if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && actorId == DateFile.instance.MianActorID())
                 {
-                    // Main.Logger.Log(actorId + "赠送" + giveId + "物品" + itemId);
                     //YesOrNoWindow.instance.SetYesOrNoWindow(-1, "功能开发中", "Ctrl+点击可以赠送物品给目标增加好感，这个功能还没开发好，尽情期待！", false, true);
                     int dayTime = DateFile.instance.dayTime;
                     if (dayTime >= 3)
                     {
-                        IconMove.Move(start, target, 0.5f, sprite);
+                        IconMove.Move(start, target, 20, sprite);
                         GiveItem(giveId, actorId, itemId);
                     }
                     else
@@ -322,25 +374,79 @@ namespace GuiScroll
                 }
                 else // 暂存物品
                 {
-                    IconMove.Move(start, target, 0.5f, sprite);
-                    SaveItem(giveId, actorId, itemId, all);
-                    //} while (all && DateFile.instance.actorItemsDate.ContainsKey(actorId) && DateFile.instance.actorItemsDate[actorId].ContainsKey(itemId) && DateFile.instance.actorItemsDate[actorId][itemId] > 0);
+                    // Main.Logger.Log("tishi " + tishi);
+                    // Main.Logger.Log("tishi_take " + tishi_take);
+                    // Main.Logger.Log("主角 " + (actorId != DateFile.instance.MianActorID()) + " " + actorId + " " + DateFile.instance.MianActorID());
+                    // Main.Logger.Log("綠點 " + !(DateFile.instance.giveItemsDate.ContainsKey(actorId) && DateFile.instance.giveItemsDate[actorId].ContainsKey(itemId)));
+                    if (tishi && tishi_take && actorId != DateFile.instance.MianActorID()&& !(DateFile.instance.giveItemsDate.ContainsKey(actorId) && DateFile.instance.giveItemsDate[actorId].ContainsKey(itemId)))
+                    {
+                        Button okbtn = YesOrNoWindow.instance.yesOrNoWindow.Find("YesButton").GetComponent<Button>();
+                        bool click_ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                        bool click_shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                        okbtn.onClick.AddListener(delegate {
+                            ClickYes(itemId, setItem, onEquip, false, click_ctrl, click_shift, actorId, giveId, start, target, sprite);
+                        });
+                        Button nobtn = YesOrNoWindow.instance.yesOrNoWindow.Find("NoButton").GetComponent<Button>();
+                        nobtn.onClick.AddListener(ClickNo);
 
-
+                        // Main.Logger.Log("确认丢弃:" + msg);
+                        YesOrNoWindow.instance.SetYesOrNoWindow(1554033137, "注意！", "确定要拿取同道物品吗？这将会导致同道好感降低甚至欠下恩义！\n如果不希望再出现此提示，请按住ctrl点击确认，那么关闭人物菜单界面之前不再提示！", true, true);
+                    }
+                    else
+                    {
+                        // 暂存物品
+                        IconMove.Move(start, target, 20, sprite);
+                        SaveItem(giveId, actorId, itemId, all);
+                    }
                 }
             }
             else
             {
-                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && actorId == DateFile.instance.MianActorID()) // 丢弃物品
+                bool click_ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                if (click_ctrl && actorId == DateFile.instance.MianActorID()) // 丢弃物品
                 {
-                    // 丢弃物品
+                    // Main.Logger.Log(" 拆解物品 ");
                     if (setItem.notakeIcon.activeSelf && setItem.notakeIcon.GetComponent<Image>().color == Color.red)
                     {
                         YesOrNoWindow.instance.SetYesOrNoWindow(-1, "触动禁制", "这个东西被锁住了！", false, true);
                         return;
                     }
-                    //YesOrNoWindow.instance.SetYesOrNoWindow(-1, "功能开发中", "Ctrl+点击可以拆解物品，这个功能还没开发好，尽情期待！", false, true);
-                    DiscardItem(actorId, itemId);
+
+                    bool click_shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                    Sprite sprite = setItem.itemIcon.GetComponent<Image>().sprite;
+                    Vector3 start = setItem.transform.position, target = new Vector3(-1000, 0, 0);
+                    if(click_shift)// 拆全部
+                    {
+                        target = ActorMenuActorListPatch.tf_RemoveALLItemDrop.position;
+                    }
+                    else
+                    {
+                        target = ActorMenuActorListPatch.tf_RemoveAItemDrop.position;
+                    }
+                    if (tishi&& tishi_drop)
+                    {
+                        // Main.Logger.Log(" 丢弃物品 提示 ");
+                        Button okbtn = YesOrNoWindow.instance.yesOrNoWindow.Find("YesButton").GetComponent<Button>();
+                        okbtn.onClick.AddListener(delegate {
+                            ClickYes(itemId, setItem, onEquip, false, click_ctrl, click_shift, actorId, giveId, start, target, sprite); 
+                        });
+                        Button nobtn = YesOrNoWindow.instance.yesOrNoWindow.Find("NoButton").GetComponent<Button>();
+                        nobtn.onClick.AddListener(ClickNo);
+
+                        // Main.Logger.Log("确认丢弃:" + msg);
+                        YesOrNoWindow.instance.SetYesOrNoWindow(1554033136, "注意！", "确定要分解此物品吗？这将永久失去物品！\n如果不希望再出现此提示，请按住ctrl点击确认，那么关闭人物菜单界面之前不再提示！", true, true);
+                    }
+                    else
+                    {
+                        // 丢弃物品
+                        if (setItem.notakeIcon.activeSelf && setItem.notakeIcon.GetComponent<Image>().color == Color.red)
+                        {
+                            YesOrNoWindow.instance.SetYesOrNoWindow(-1, "触动禁制", "这个东西被锁住了！", false, true);
+                            return;
+                        }
+                        IconMove.Move(start, target, 20, sprite);
+                        DiscardItem(actorId, itemId, Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+                    }
                 }
                 else // 使用物品
                 {
@@ -352,30 +458,30 @@ namespace GuiScroll
                     if (!use)
                     {
                         int bigTyp = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 4));
-                        Main.Logger.Log("物品大类 " + bigTyp);
-                        Main.Logger.Log("物品小类" + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 5)));
+                        // Main.Logger.Log("物品大类 " + bigTyp);
+                        // Main.Logger.Log("物品小类" + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 5)));
                         if (itemId != StorySystem.instance.useFoodId && (2 == bigTyp)) //丹药
                         {
                             use = UseCure(actorId, itemId); // 尝试使用疗伤药
                             if (!use)
                             {
-                                Main.Logger.Log("尝试使用内息药");
+                                // Main.Logger.Log("尝试使用内息药");
                                 use = UseMianQi(actorId, itemId); // 尝试使用内息药
-                                Main.Logger.Log("使用内息药" + use);
+                                // Main.Logger.Log("使用内息药" + use);
                             }
 
                             if (!use)
                             {
-                                Main.Logger.Log("尝试使用寿命药");
+                                // Main.Logger.Log("尝试使用寿命药");
                                 use = UseLife(actorId, itemId); // 尝试使用寿命药
-                                Main.Logger.Log("使用寿命药" + use);
+                                // Main.Logger.Log("使用寿命药" + use);
                             }
 
                             if (!use)
                             {
-                                Main.Logger.Log("尝试使用毒药/解毒药");
+                                // Main.Logger.Log("尝试使用毒药/解毒药");
                                 use = UsePoison(actorId, itemId); // 尝试使用毒药/解毒药
-                                Main.Logger.Log("使用毒药/解毒药" + use);
+                                // Main.Logger.Log("使用毒药/解毒药" + use);
                             }
                         }
                         else if (itemId != StorySystem.instance.useFoodId && (6 == bigTyp)) //其他
@@ -412,11 +518,9 @@ namespace GuiScroll
 
         }
 
-        public static void DiscardItem(int actorId, int itemId)
+        public static void DiscardItem(int actorId, int itemId, bool click_shift)
         {
-            bool all = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-
-            if (all)
+            if (click_shift) // 拆解所有
             {
                 int num26 = itemId;
                 int itemNumber = DateFile.instance.GetItemNumber(actorId, num26);
@@ -468,7 +572,7 @@ namespace GuiScroll
             */
             // 部位 0|1|2武器 3帽子 4衣服 5铠甲 6鞋子 7|8|9宝物 10坐骑 11蛐蛐
             string[] parts = DateFile.instance.GetItemDate(itemId, 2).Split('|');
-            Main.Logger.Log("部位" + parts[0]);
+            // Main.Logger.Log("部位" + parts[0]);
             int part = 301;
             if (parts.Length > 1) // 武器或饰品
             {
@@ -487,7 +591,7 @@ namespace GuiScroll
             {
                 part += DateFile.instance.ParseInt(parts[0]);
             }
-            Main.Logger.Log("装备位置" + part);
+            // Main.Logger.Log("装备位置" + part);
 
             DateFile.instance.SetActorEquip(actorId, part, itemId);
             if (DateFile.instance.teachingOpening == 101)
@@ -570,10 +674,10 @@ namespace GuiScroll
             {
                 // Main.Logger.Log(item.Key + " 伤口 " + item.Value);
                 int ijId = item.Key;
-                foreach (var vvv in DateFile.instance.injuryDate[ijId])
-                {
-                    // Main.Logger.Log(vvv.Key + " 伤口类型 " + vvv.Value);
-                }
+                //foreach (var vvv in DateFile.instance.injuryDate[ijId])
+                //{
+                   // Main.Logger.Log(vvv.Key + " 伤口类型 " + vvv.Value);
+                //}
                 if (DateFile.instance.injuryDate[ijId].ContainsKey(damageTyp))
                 {
                     int injury = DateFile.instance.ParseInt(DateFile.instance.injuryDate[ijId][damageTyp]);
@@ -644,7 +748,7 @@ namespace GuiScroll
             if (cureValue == 0)
                 return false;
             int actorMianQi = DateFile.instance.GetActorMianQi(actorId);
-            Main.Logger.Log("内息" + actorMianQi);
+            // Main.Logger.Log("内息" + actorMianQi);
             if (actorMianQi > 0)
             {
                 ActorMenu.instance.ChangeMianQi(actorId, cureValue * 10);
@@ -682,7 +786,7 @@ namespace GuiScroll
                 return false;
             int hp = ActorMenu.instance.Health(actorId);
             int maxHp = ActorMenu.instance.MaxHealth(actorId);
-            Main.Logger.Log("hp=" + hp + " maxHp" + maxHp);
+            // Main.Logger.Log("hp=" + hp + " maxHp" + maxHp);
             if (hp < maxHp)
             {
                 ActorMenu.instance.ChangeHealth(actorId, DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 13)));
@@ -719,7 +823,7 @@ namespace GuiScroll
             if(smallTyp == 30)
             {
                 // 是毒药
-                Main.Logger.Log(" 是毒药" );
+                // Main.Logger.Log(" 是毒药" );
             }
             else if(smallTyp == 31)
             {
@@ -728,23 +832,23 @@ namespace GuiScroll
                 for (int i = 0; i < 6; i++)
                 {
                     int num34 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 61 + i));
-                    Main.Logger.Log(i + " 可能是解毒药" + num34);
+                    // Main.Logger.Log(i + " 可能是解毒药" + num34);
                     if (num34 < 0)
                     {
                         isPoison = true;
-                        Main.Logger.Log(i + " 是解毒药" + num34);
+                        // Main.Logger.Log(i + " 是解毒药" + num34);
                         break;// 是解毒药
                     }
                 }
                 if (!isPoison)
                 {
-                    Main.Logger.Log(" 不是解毒药");
+                    // Main.Logger.Log(" 不是解毒药");
                     return false;// 不是解毒药
                 }
             }
             else
             {
-                Main.Logger.Log(" 是其他");
+                // Main.Logger.Log(" 是其他");
                 return false; // 是其他
             }
 
@@ -911,6 +1015,8 @@ namespace GuiScroll
             ActorMenu.instance.UpdateEquips(actorId, ActorMenu.instance.equipTyp);
             // Main.Logger.Log("OK5 ");
         }
+
+
         // 赠送物品给同道
         public static void GiveItem(int giveId, int actorId, int itemId)
         {

@@ -1,16 +1,15 @@
-using DG.Tweening;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 namespace GuiBaseUI
 {
-    public class IconMove
+    public class IconMove : MonoBehaviour
     {
         static Transform root;
         static GameObject prefab;
         static List<IconItem> pool = new List<IconItem>();
-
-        public static void Move(Vector3 start, Vector3 target, float duration = .5f, Sprite sprite = null)
+        static List<IconItem> use = new List<IconItem>();
+        public static void Move(Vector3 start, Vector3 target, float speed = 20, Sprite sprite = null)
         {
             IconItem item;
             if (pool.Count > 0)
@@ -22,18 +21,28 @@ namespace GuiBaseUI
             {
                 item = GetNewIcon();
             }
+            item.target = target;
+            item.transform.position = start;
+            item.speed = speed;
             item.image.sprite = sprite;
             item.transform.localScale = Vector3.one;
-            item.transform.position = start;
-            var tweener = item.transform.DOMove(target, duration);
-            tweener.SetEase(Ease.Linear);
-            tweener.onComplete = delegate () {
-                if (item.transform)
+            use.Add(item);
+        }
+        void Update()
+        {
+            for (int i = use.Count - 1; i >= 0; i--)
+            {
+                IconItem item = use[i];
+                float move = item.speed * Time.deltaTime;
+                if (Vector3.Distance(item.target, item.transform.position) < move)
                 {
-                    item.transform.localScale = Vector3.zero;
                     pool.Add(item);
+                    use.RemoveAt(i);
+                    item.transform.localScale = Vector3.zero;
+                    return;
                 }
-            };
+                item.transform.position += (item.target - item.transform.position).normalized * move;
+            }
         }
 
         static IconItem GetNewIcon()
@@ -41,15 +50,14 @@ namespace GuiBaseUI
             if (root == null)
             {
                 GameObject go = new GameObject();
-                go.name = "IconMove";
+                go.AddComponent<IconMove>();
+                go.name = "IconMovePool";
                 root = go.transform;
-                root.SetParent(Object.FindObjectOfType<Canvas>().transform,false);
+                root.SetParent(FindObjectOfType<Canvas>().transform, false);
                 root.position = Vector3.zero;
                 prefab = CreateUI.NewImage();
-                prefab.transform.SetParent(root);
-                prefab.transform.localScale = Vector3.zero;
             }
-            IconItem item = new IconItem(Object.Instantiate(prefab));
+            IconItem item = new IconItem(GameObject.Instantiate<GameObject>(prefab));
             return item;
         }
 
@@ -57,12 +65,16 @@ namespace GuiBaseUI
         {
             public Transform transform;
             public Image image;
+            public Vector3 target;
+            public float speed;
             public IconItem(GameObject go)
             {
                 transform = go.transform;
                 image = go.GetComponent<Image>();
+                target = Vector3.zero;
                 transform.SetParent(root);
-                transform.localScale = Vector3.zero;
+                transform.position = new Vector3(10000, 0, 0);
+                speed = 20;
             }
         }
     }

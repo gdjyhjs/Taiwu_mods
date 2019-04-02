@@ -193,7 +193,50 @@ namespace GuiBaseUI
 
         }
 
-
+        static int find_count = 0;
+        public static void FindChild(Transform parent, string[] namelist, Transform[] result, bool recursive = false)
+        {
+            if (!recursive)
+                find_count = 0;
+            if (namelist==null|| result==null|| result.Length!= namelist.Length)
+            {
+                Debug.LogError("参数 namelist 或者 result 错误！");
+                return;
+            }
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                for (int j = 0; j < namelist.Length; j++)
+                {
+                    if(child.name == namelist[j]&&null == result[j])
+                    {
+                        result[j] = child;
+                        find_count++;
+                    }
+                }
+                if (find_count >= namelist.Length)
+                    return;
+                FindChild(child, namelist, result, true);
+            }
+        }
+        public static Transform FindChild(Transform parent, string name)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                Transform child = parent.GetChild(i);
+                if (child.name == name)
+                {
+                    return child;
+                }
+                else
+                {
+                    Transform result = FindChild(child, name);
+                    if (result)
+                        return result;
+                }
+            }
+            return null;
+        }
 
         public static void LogAllChild(Transform tf, bool logSize = false, int idx = 0)
         {

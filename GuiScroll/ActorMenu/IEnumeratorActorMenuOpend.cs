@@ -1,5 +1,6 @@
 
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GuiScroll
 {
@@ -42,7 +43,12 @@ namespace GuiScroll
 
         public void ActorMenuOpend1()
         {
+            // 恢復關鍵操作提示
+            NewItemPackage.tishi_drop = true;
+            NewItemPackage.tishi_take = true;
+
             // Main.Logger.Log("角色菜单打开 111");
+
 
             TipsWindow.instance.showTipsTime = -100;
             YesOrNoWindow.instance.ShwoWindowMask(ActorMenuActorListPatch.actorMenu.transform, on: true);

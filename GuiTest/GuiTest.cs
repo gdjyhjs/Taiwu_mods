@@ -27,6 +27,7 @@ namespace GuiTest
         public static bool enabled;
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
+        static Transform root;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -41,7 +42,12 @@ namespace GuiTest
             HarmonyInstance harmony = HarmonyInstance.Create(modEntry.Info.Id);
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
-
+            if (root == null)
+            {
+                GameObject go = new GameObject();
+                go.AddComponent<TestClick>();
+                GameObject.DontDestroyOnLoad(go);
+            }
             return true;
         }
 
@@ -74,31 +80,71 @@ namespace GuiTest
             //    GuiBaseUI.Main.LogAllChild(ActorMenu.instance.listActorsHolder.root);
 
             //}
+
+
         }
 
-        [HarmonyPatch(typeof(ActorMenu), "CloseActorMenu")]
-        public static class ActorMenu_CloseActorMenu_Patch
+        class TestClick : MonoBehaviour
         {
-            public static void Postfix()
+            void Update()
             {
-                Main.Logger.Log("关闭");
-                StackTrace st = new StackTrace(true);
-                Main.Logger.Log(st.ToString());
+                if (Input.GetMouseButtonDown(0))
+                {
+                    GameObject go = ClickObject();
+                    string str = "点击";
+                    Transform tf = go.transform;
+                    while (tf)
+                    {
+                        str += "/" + tf;
+                        tf = tf.parent;
+                    }
+                    Main.Logger.Log(str);
+                }
+            }
+            public GameObject ClickObject()
+            {
+                PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+                eventDataCurrentPosition.position = new Vector2
+                    (
+                    Input.mousePosition.x, Input.mousePosition.y
+                    );
+                List<RaycastResult> results = new List<RaycastResult>();
+                EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
+                if (results.Count > 0)
+                {
+                    return results[0].gameObject;
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
-        [HarmonyPatch(typeof(DateFile), "ChangeTwoActorItem")]
-        public static class DateFile_ChangeTwoActorItem_Patch
-        {
-            public static void Postfix(int loseItemActorId, int getItemActorId, int itemId, int itemNumber = 1, int getTyp = -1, int partId = 0, int placeId = 0)
-            {
-                Main.Logger.Log("massageItemTyp=" + MassageWindow.instance.massageItemTyp);
-                Main.Logger.Log(loseItemActorId + " " + getItemActorId + " " + itemId + " " + itemNumber + " " + getTyp + " " + partId + placeId);
-                StackTrace st = new StackTrace(true);
 
-                Main.Logger.Log(st.ToString());
-            }
-        }
+        //[HarmonyPatch(typeof(ActorMenu), "CloseActorMenu")]
+        //public static class ActorMenu_CloseActorMenu_Patch
+        //{
+        //    public static void Postfix()
+        //    {
+        //        Main.Logger.Log("关闭");
+        //        StackTrace st = new StackTrace(true);
+        //        Main.Logger.Log(st.ToString());
+        //    }
+        //}
+
+        //[HarmonyPatch(typeof(DateFile), "ChangeTwoActorItem")]
+        //public static class DateFile_ChangeTwoActorItem_Patch
+        //{
+        //    public static void Postfix(int loseItemActorId, int getItemActorId, int itemId, int itemNumber = 1, int getTyp = -1, int partId = 0, int placeId = 0)
+        //    {
+        //        Main.Logger.Log("massageItemTyp=" + MassageWindow.instance.massageItemTyp);
+        //        Main.Logger.Log(loseItemActorId + " " + getItemActorId + " " + itemId + " " + itemNumber + " " + getTyp + " " + partId + placeId);
+        //        StackTrace st = new StackTrace(true);
+
+        //        Main.Logger.Log(st.ToString());
+        //    }
+        //}
 
         //[HarmonyPatch(typeof(DateFile), "SetActorEquip")]
         //public static class DateFile_SetActorEquip_Patch
