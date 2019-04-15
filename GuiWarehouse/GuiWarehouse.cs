@@ -24,7 +24,7 @@ namespace GuiWarehouse
 
         public int tackNum = 5;//自定义存取物品数量 配置
         public int numberOfColumns = 8;//几列物品 配置
-        public int scrollSpeed = 30;//滚动速度 配置
+        //public int scrollSpeed = 30;//滚动速度 配置
 
         public bool remoteWarehouse = false;//远程仓库
 
@@ -105,7 +105,7 @@ namespace GuiWarehouse
             
             return true;
         }
-        static string title = "鬼的仓库";
+        //static string title = "鬼的仓库";
 
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
@@ -118,7 +118,7 @@ namespace GuiWarehouse
         }
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-            GUILayout.Label(title, GUILayout.Width(300));
+            //GUILayout.Label(title, GUILayout.Width(300));
             GUILayout.BeginHorizontal();
             if (GUILayout.Toggle(Main.settings.useWarehouse == 0, "新版仓库"))
             {
@@ -169,18 +169,18 @@ namespace GuiWarehouse
             GUILayout.Label(string.Format("<color=#F63333>←←←←←← 设置按住Shift+点击物品存储{0}个物品</color>", Main.settings.tackNum));
             GUILayout.EndHorizontal();
 
-            GUILayout.BeginHorizontal();
-            string speed = GUILayout.TextField(Main.settings.scrollSpeed.ToString());
-            int s;
-            if (int.TryParse(speed, out s))
-            {
-                if (s > 0 || s < 1000)
-                {
-                    Main.settings.scrollSpeed = s;
-                }
-            }
-            GUILayout.Label(string.Format("←←←←←← 设置背包滚轮滑动速度{0}", Main.settings.scrollSpeed));
-            GUILayout.EndHorizontal();
+            //GUILayout.BeginHorizontal();
+            //string speed = GUILayout.TextField(Main.settings.scrollSpeed.ToString());
+            //int s;
+            //if (int.TryParse(speed, out s))
+            //{
+            //    if (s > 0 || s < 1000)
+            //    {
+            //        Main.settings.scrollSpeed = s;
+            //    }
+            //}
+            //GUILayout.Label(string.Format("←←←←←← 设置背包滚轮滑动速度{0}", Main.settings.scrollSpeed));
+            //GUILayout.EndHorizontal();
 
 
             GUILayout.BeginHorizontal();

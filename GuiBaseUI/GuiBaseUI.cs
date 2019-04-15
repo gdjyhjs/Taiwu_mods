@@ -27,6 +27,7 @@ namespace GuiBaseUI
         public float handB = 0.8156863f;
 
         public int handWidth = 20;
+        public int scrollSensitivity = 30;
     }
     public static class Main
     {
@@ -43,12 +44,14 @@ namespace GuiBaseUI
             public Image hand;
             public RectTransform bgtf;
             public RectTransform handtf;
-            public HandData(Image b,Image h,RectTransform btf, RectTransform htf)
+            public ScrollRect scroll;
+            public HandData(Image b,Image h,RectTransform btf, RectTransform htf, ScrollRect sr)
             {
                 bg = b;
                 hand = h;
                 bgtf = btf;
                 handtf = htf;
+                scroll = sr;
             }
         }
         public static List<HandData> hands = new List<HandData>();
@@ -76,7 +79,7 @@ namespace GuiBaseUI
             return true;
         }
 
-        static string title = "鬼的基础界面 1.0.0";
+        
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
             enabled = value;
@@ -98,9 +101,9 @@ namespace GuiBaseUI
 
 
         int handWidth;
+            int scrollSensitivity;
 
 
-            GUILayout.Label(title, GUILayout.Width(300));
             GUILayout.BeginHorizontal();
             GUILayout.Label(string.Format("<color=#{0}{1}{2}>■■■■■■■■</color>底色"
                 , (Main.settings.bgR * 255 > 16 ? "" : "0") + Convert.ToString((int)(Main.settings.bgR * 255), 16)
@@ -190,7 +193,30 @@ namespace GuiBaseUI
                     hands.Remove(item);
                 }
             }
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(string.Format("设置滑动速度{0}", Main.settings.scrollSensitivity),GUILayout.Width(120));
+            scrollSensitivity = (int)GUILayout.HorizontalSlider(Main.settings.scrollSensitivity, 1, 500);
+            if(scrollSensitivity!= Main.settings.scrollSensitivity)
+            {
+                Main.settings.scrollSensitivity = scrollSensitivity;
+                List<HandData> res = new List<HandData>();
+                foreach (var item in hands)
+                {
+                    if (item.scroll)
+                    {
+                        item.scroll.scrollSensitivity = scrollSensitivity;
+                    }
+                    else
+                    {
+                        res.Add(item);
+                    }
+                }
+                foreach (var item in res)
+                {
+                    hands.Remove(item);
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         static int find_count = 0;

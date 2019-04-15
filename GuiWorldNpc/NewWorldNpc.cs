@@ -239,25 +239,25 @@ namespace GuiWorldNpc
                 }
             }
         }
-        private void Update()
-        {
-            if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
-            {
-                return;
-            }
-            var mousePosition = Input.mousePosition;
-            var mouseOnPackage = mousePosition.x < Screen.width / 10 && mousePosition.y > Screen.width / 10 && mousePosition.y < Screen.width / 10 * 9;
+        //private void Update()
+        //{
+        //    if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
+        //    {
+        //        return;
+        //    }
+        //    var mousePosition = Input.mousePosition;
+        //    var mouseOnPackage = mousePosition.x < Screen.width / 10 && mousePosition.y > Screen.width / 10 && mousePosition.y < Screen.width / 10 * 9;
 
-            var v = Input.GetAxis("Mouse ScrollWheel");
-            if (v != 0)
-            {
-                if (mouseOnPackage)
-                {
-                    float count = m_data.Length / Main.settings.numberOfColumns + 1;
-                    scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
-                }
-            }
-        }
+        //    var v = Input.GetAxis("Mouse ScrollWheel");
+        //    if (v != 0)
+        //    {
+        //        if (mouseOnPackage)
+        //        {
+        //            float count = m_data.Length / Main.settings.numberOfColumns + 1;
+        //            scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
+        //        }
+        //    }
+        //}
 
         //private bool late_update;
         //private void LateUpdate()

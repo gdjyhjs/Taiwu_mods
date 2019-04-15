@@ -291,25 +291,30 @@ namespace GuiScroll
             }
         }
 
-        private void Update()
-        {
-            if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
-            {
-                return;
-            }
-            var mousePosition = Input.mousePosition;
-            var mouseOnPackage = mousePosition.x < Screen.width / 16 && mousePosition.y > Screen.width / 10 && mousePosition.y < Screen.width / 10 * 9;
 
-            var v = Input.GetAxis("Mouse ScrollWheel");
-            if (v != 0)
-            {
-                if (mouseOnPackage)
-                {
-                    float count = m_data.Length / lineCount + 1;
-                    scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
-                }
-            }
-        }
+        //private void Update()
+        //{
+        //    if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
+        //    {
+        //        return;
+        //    }
+        //    float x = 0.058f, y = 0.104f, w = 0.121f, h = 0.791f;
+        //    Vector3 mousePosition = Input.mousePosition;
+        //    mousePosition.y = Screen.height - mousePosition.y;
+        //    bool mouseOnPackage = (mousePosition.x > (Screen.width * x)) && (mousePosition.x < (Screen.width * (x + w)))
+        //        && (mousePosition.y > (Screen.height * y)) && (mousePosition.y < (Screen.height * (y + h)));
+
+        //    if (mouseOnPackage)
+        //    {
+        //        var v = Input.GetAxis("Mouse ScrollWheel");
+        //        if (v != 0)
+        //        {
+        //            float count = m_data.Length / lineCount + 1;
+        //            scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
+        //        }
+        //    }
+        //}
+
         public class ActorItem : ItemCell
         {
 

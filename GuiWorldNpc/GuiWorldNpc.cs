@@ -18,7 +18,7 @@ namespace GuiWorldNpc
         {
             UnityModManager.ModSettings.Save<Settings>(this, modEntry);
         }
-        public float scrollSpeed = 15;//滑动速度
+        //public float scrollSpeed = 15;//滑动速度
         public bool open = true; //使用鬼的世界NPC
         public int numberOfColumns = 1;//一行显示几个
 
@@ -50,7 +50,7 @@ namespace GuiWorldNpc
             return true;
         }
 
-        static string title = "鬼的世界NPC 测试版";
+        //static string title = "鬼的世界NPC 测试版";
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
             enabled = value;
@@ -62,15 +62,15 @@ namespace GuiWorldNpc
         }
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-            GUILayout.Label(title, GUILayout.Width(300));
+            //GUILayout.Label(title, GUILayout.Width(300));
             // Main.settings.open = GUILayout.Toggle(Main.settings.open, "鬼的世界NPC");
             // Main.settings.open = !GUILayout.Toggle(!Main.settings.open, "原版世界NPC");
-            GUILayout.Label("滑动速度↓↓↓↓↓");
-            int speed;
-            if(int.TryParse(GUILayout.TextField(settings.scrollSpeed.ToString()), out speed))
-            {
-                settings.scrollSpeed = speed;
-            }
+            //GUILayout.Label("滑动速度↓↓↓↓↓");
+            //int speed;
+            //if(int.TryParse(GUILayout.TextField(settings.scrollSpeed.ToString()), out speed))
+            //{
+            //    settings.scrollSpeed = speed;
+            //}
             GUILayout.Label("<color=#F63333>如果出现BUG影响正常使用请在游戏目录Mods文件夹下删除GuiWorldNpc然后等待更新</color>");
         }
 

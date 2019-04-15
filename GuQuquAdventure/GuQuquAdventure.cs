@@ -12,7 +12,7 @@ using System.Text;
 using System.Diagnostics;
 using UnityEngine.EventSystems;
 
-namespace GuiScroll
+namespace GuQuquAdventure
 {
     public class Settings : UnityModManager.ModSettings
     {
@@ -20,8 +20,6 @@ namespace GuiScroll
         {
             UnityModManager.ModSettings.Save<Settings>(this, modEntry);
         }
-        public float scrollSpeed = 10;
-        public bool openActor = true;
     }
     public static class Main
     {
@@ -29,6 +27,7 @@ namespace GuiScroll
         public static bool enabled;
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
+        static GameObject obj;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -39,14 +38,30 @@ namespace GuiScroll
             modEntry.OnGUI = OnGUI;
             modEntry.OnSaveGUI = OnSaveGUI;
             #endregion
-            //ActorPatch.Init(modEntry);
 
-            ActorMenuActorListPatch.Init(modEntry);
 
-            HarmonyInstance harmony = HarmonyInstance.Create(modEntry.Info.Id);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            if (obj == null)
+            {
+                   
+                ////从文件夹里加载包
+                //var my_ui_ab = UnityEngine.AssetBundle.LoadFromFile("F:/ui.assetbundle");
+                //if (my_ui_ab == null)
+                //{
+                //    return true;
+                //}
+                ////从Bundle包中加载名字为：ququ_adventure 的资源，加载为 GameObject
+                //var prefab = my_ui_ab.LoadAsset<GameObject>("ququ_adventure");
+                //GameObject go = GameObject.Instantiate(prefab);
 
+                //// 用完就删 asset 包用完就删 节约内存
+                //my_ui_ab.Unload(false);
+            }
             return true;
+        }
+
+        static void OnGUI(UnityModManager.ModEntry modEntry)
+        {
+
         }
 
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
@@ -58,25 +73,5 @@ namespace GuiScroll
         {
             settings.Save(modEntry);
         }
-
-
-
-        static void OnGUI(UnityModManager.ModEntry modEntry)
-        {
-
-            //if (GUILayout.Button("测试"))
-            //{
-            //    ActorMenu.instance.listActorsHolder.root.gameObject.SetActive(!ActorMenu.instance.listActorsHolder.root.gameObject.activeSelf);
-            //    Main.Logger.Log(ActorMenu.instance.listActorsHolder.root.ToString());
-            //    Main.Logger.Log(ActorMenu.instance.listActorsHolder.ToString());
-            //}
-
-            //if (GUILayout.Button("打印"))
-            //{
-            //    GuiBaseUI.Main.LogAllChild(ActorMenu.instance.listActorsHolder.root);
-                
-            //}
-        }
-
     }
 }

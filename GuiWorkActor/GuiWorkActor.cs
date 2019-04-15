@@ -20,7 +20,7 @@ namespace GuiWorkActor
         }
         public bool open = true; //使用鬼的仓库
         public int numberOfColumns = 4;
-        public float scrollSpeed = 10;
+        //public float scrollSpeed = 10;
     }
     public static class Main
     {
@@ -46,7 +46,7 @@ namespace GuiWorkActor
             return true;
         }
 
-        static string title = "鬼的工作间";
+        //static string title = "鬼的工作间";
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
             enabled = value;
@@ -58,7 +58,7 @@ namespace GuiWorkActor
         }
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-            GUILayout.Label(title, GUILayout.Width(300));
+            //GUILayout.Label(title, GUILayout.Width(300));
             // Main.settings.open = GUILayout.Toggle(Main.settings.open, "使用鬼的工作间");
         }
 

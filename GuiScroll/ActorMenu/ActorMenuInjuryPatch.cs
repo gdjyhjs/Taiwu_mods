@@ -140,6 +140,7 @@ namespace GuiScroll
             // Main.Logger.Log(actorId + " 寻找疗伤药 " + typ);
             ActorMenu _this = ActorMenu.instance;
             List<int> itemSort = DateFile.instance.GetItemSort(new List<int>(_this.GetActorItems(useActorId).Keys));
+            int flag = -1;
             int result = -1;
             foreach (int itemId in itemSort)
             {
@@ -150,16 +151,32 @@ namespace GuiScroll
                     if ((cureValue * 3 >= DateFile.instance.actorInjuryDate[actorId][injuryId]))// 判断是否能百分百发挥疗伤药药效
                     {
                         // Main.Logger.Log("获得能百分百发挥药效的疗伤药");
-                        return itemId;
+                        if (result == -1)
+                        {
+                            result = itemId;
+                        }
+                        else if(DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(result, 8)))
+                        {
+                            result = itemId;
+                        }
                     }
-                    else if(result==-1)
+                    else
                     {
-                        // Main.Logger.Log("记录疗伤药");
-                        result = itemId;
+                        if (flag == -1)
+                        {
+                            flag = itemId;
+                        }
+                        else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(flag, 8)))
+                        {
+                            flag = itemId;
+                        }
                     }
                 }
             }
-            return result;
+            if (result == -1)
+                return flag;
+            else
+                return result;
         }
         // 增加健康
         public static void AddHealth()
@@ -226,6 +243,7 @@ namespace GuiScroll
         {
             ActorMenu _this = ActorMenu.instance;
             List<int> itemSort = DateFile.instance.GetItemSort(new List<int>(_this.GetActorItems(useActorId).Keys));
+            int flag = -1;
             int result = -1;
             // Main.Logger.Log("物品数量 " + itemSort.Count);
             foreach (int itemId in itemSort)
@@ -236,16 +254,33 @@ namespace GuiScroll
                 {
                     if (cureValue * 3 >= lack)// 判断是否能百分百发挥疗伤药药效
                     {
-                        return itemId;
+                        if (result == -1)
+                        {
+                            result = itemId;
+                        }
+                        else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(result, 8)))
+                        {
+                            result = itemId;
+                        }
                     }
-                    else if (result == -1)
+                    else
                     {
-                        result = itemId;
+                        if (flag == -1)
+                        {
+                            flag = itemId;
+                        }
+                        else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(flag, 8)))
+                        {
+                            flag = itemId;
+                        }
                     }
                 }
             }
             // Main.Logger.Log("获取寿命药 "+ result);
-            return result;
+            if (result == -1)
+                return flag;
+            else
+                return result;
         }
 
 
@@ -311,6 +346,7 @@ namespace GuiScroll
         {
             ActorMenu _this = ActorMenu.instance;
             List<int> itemSort = DateFile.instance.GetItemSort(new List<int>(_this.GetActorItems(useActorId).Keys));
+            int flag = -1;
             int result = -1;
             // Main.Logger.Log("物品数量 " + itemSort.Count);
             foreach (int itemId in itemSort)
@@ -321,16 +357,34 @@ namespace GuiScroll
                 {
                     if (actorMianQi > cureValue)// 判断是否能百分百发挥疗伤药药效
                     {
-                        return itemId;
+                        // Main.Logger.Log("获得能百分百发挥药效的疗伤药");
+                        if (result == -1)
+                        {
+                            result = itemId;
+                        }
+                        else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(result, 8)))
+                        {
+                            result = itemId;
+                        }
                     }
                     else if (result == -1)
                     {
-                        result = itemId;
+                        if (flag == -1)
+                        {
+                            flag = itemId;
+                        }
+                        else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(flag, 8)))
+                        {
+                            flag = itemId;
+                        }
                     }
                 }
             }
             // Main.Logger.Log("获取内息药 "+ result);
-            return result;
+            if (result == -1)
+                return flag;
+            else
+                return result;
         }
 
 
@@ -415,6 +469,7 @@ namespace GuiScroll
             // Main.Logger.Log("获取解毒药物"+ actorId+" "+ useActorId+" "+ typ);
             ActorMenu _this = ActorMenu.instance;
             List<int> itemSort = DateFile.instance.GetItemSort(new List<int>(_this.GetActorItems(useActorId).Keys));
+            int flag = -1;
             int result = -1;
             // Main.Logger.Log("物品数量 " + itemSort.Count);
             foreach (int itemId in itemSort)
@@ -430,18 +485,35 @@ namespace GuiScroll
                             int num = DateFile.instance.ParseInt(DateFile.instance.GetActorDate(actorId, 51 + i, addValue: false));
                             if (!(value < 0 && num > Mathf.Abs(value) * 3))// 判断是否能百分百发挥疗伤药药效
                             {
-                                return itemId;
+                                if (result == -1)
+                                {
+                                    result = itemId;
+                                }
+                                else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(result, 8)))
+                                {
+                                    result = itemId;
+                                }
                             }
                             else if (result == -1)
                             {
-                                result = itemId;
+                                if (flag == -1)
+                                {
+                                    flag = itemId;
+                                }
+                                else if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)) < DateFile.instance.ParseInt(DateFile.instance.GetItemDate(flag, 8)))
+                                {
+                                    flag = itemId;
+                                }
                             }
                         }
                     }
                 }
             }
             // Main.Logger.Log("获取解毒药 "+ result);
-            return result;
+            if (result == -1)
+                return flag;
+            else
+                return result;
         }
 
     }

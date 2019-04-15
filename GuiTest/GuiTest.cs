@@ -28,6 +28,8 @@ namespace GuiTest
         public static Settings settings;
         public static UnityModManager.ModEntry.ModLogger Logger;
         static Transform root;
+        static int x, y, w, h;
+        static bool draw_xywh;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -48,6 +50,10 @@ namespace GuiTest
                 go.AddComponent<TestClick>();
                 GameObject.DontDestroyOnLoad(go);
             }
+
+            w = Screen.width;
+            h = Screen.height;
+
             return true;
         }
 
@@ -66,7 +72,7 @@ namespace GuiTest
 
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-            GUILayout.Label(title, GUILayout.Width(300));
+
 
             //if (GUILayout.Button("测试"))
             //{
@@ -91,14 +97,17 @@ namespace GuiTest
                 if (Input.GetMouseButtonDown(0))
                 {
                     GameObject go = ClickObject();
-                    string str = "点击";
-                    Transform tf = go.transform;
-                    while (tf)
+                    if (go)
                     {
-                        str += "/" + tf;
-                        tf = tf.parent;
+                        string str = "点击";
+                        Transform tf = go.transform;
+                        while (tf)
+                        {
+                            str += "/" + tf;
+                            tf = tf.parent;
+                        }
+                        Main.Logger.Log(str);
                     }
-                    Main.Logger.Log(str);
                 }
             }
             public GameObject ClickObject()
@@ -117,6 +126,32 @@ namespace GuiTest
                 else
                 {
                     return null;
+                }
+            }
+            private void OnGUI()
+            {
+                GUILayout.Label(title, GUILayout.Width(300));
+                GUILayout.Label("x:");
+                int.TryParse(GUILayout.TextField(x.ToString()), out x);
+                GUILayout.Label("y:");
+                int.TryParse(GUILayout.TextField(y.ToString()), out y);
+                GUILayout.Label("w:");
+                int.TryParse(GUILayout.TextField(w.ToString()), out w);
+                GUILayout.Label("h:");
+                int.TryParse(GUILayout.TextField(h.ToString()), out h);
+                draw_xywh = GUILayout.Toggle(draw_xywh, "开关");
+
+                // 1280 720
+                // 背包 265 295 505 290    
+                // 装备 265 390 505 230
+                // 同道 75 75 155 570
+                // 背包 0.205 0.405 0.394 0.402
+                // 装备 0.205 0.541 0.394 0.319
+                // 同道 0.058 0.104 0.121 0.791
+
+                if (draw_xywh)
+                {
+                    GUI.Box(new Rect(x, y, w, h), "");
                 }
             }
         }
@@ -227,7 +262,7 @@ namespace GuiTest
         //        if (!Main.enabled)
         //            return true;
 
-        //        Main.Logger.Log("loseItemActorId=" + loseItemActorId+ " getItemActorId="+ getItemActorId + " itemId=" + itemId + " itemNumber=" + itemNumber + " getTyp=" + getTyp + " partId=" + partId + " placeId=" + placeId);
+        //        Main.Logger.Log("loseItemActorId=" + loseItemActorId + " getItemActorId=" + getItemActorId + " itemId=" + itemId + " itemNumber=" + itemNumber + " getTyp=" + getTyp + " partId=" + partId + " placeId=" + placeId);
 
         //        return true;
         //    }

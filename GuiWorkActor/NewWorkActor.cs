@@ -191,22 +191,22 @@ namespace GuiWorkActor
             // Main.Logger.Log(string.Format("创建第{0}行NPC {1} {2} {3} {4}", index, names[0], names[1], names[2], names[3]));
         }
 
-        private void Update()
-        {
-            if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
-            {
-                return;
-            }
-            var mousePosition = Input.mousePosition;
-            var mouseOnPackage = mousePosition.x > Screen.width * 0.9f && mousePosition.x > Screen.width * 0.1f && mousePosition.y > Screen.height * 0.9f && mousePosition.y > Screen.height * 0.1f;
+        //private void Update()
+        //{
+        //    if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
+        //    {
+        //        return;
+        //    }
+        //    var mousePosition = Input.mousePosition;
+        //    var mouseOnPackage = mousePosition.x > Screen.width * 0.9f && mousePosition.x > Screen.width * 0.1f && mousePosition.y > Screen.height * 0.9f && mousePosition.y > Screen.height * 0.1f;
 
-            var v = Input.GetAxis("Mouse ScrollWheel");
-            if (v != 0)
-            {
-                    float count = m_data.Length / Main.settings.numberOfColumns + 1;
-                    scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
-            }
-        }
+        //    var v = Input.GetAxis("Mouse ScrollWheel");
+        //    if (v != 0)
+        //    {
+        //            float count = m_data.Length / Main.settings.numberOfColumns + 1;
+        //            scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
+        //    }
+        //}
 
         // void OnGUI()
         // {

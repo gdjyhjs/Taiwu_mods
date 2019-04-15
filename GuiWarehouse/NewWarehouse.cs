@@ -252,25 +252,25 @@ namespace GuiWarehouse
             }
         }
 
-        private void Update()
-        {
-            if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
-            {
-                return;
-            }
-            var mousePosition = Input.mousePosition;
-            var mouseOnPackage = mousePosition.x > Screen.width / 2;
+        //private void Update()
+        //{
+        //    if (!gameObject.activeInHierarchy | m_data == null | scrollRect == null)
+        //    {
+        //        return;
+        //    }
+        //    var mousePosition = Input.mousePosition;
+        //    var mouseOnPackage = mousePosition.x > Screen.width / 2;
 
-            var v = Input.GetAxis("Mouse ScrollWheel");
-            if (v != 0)
-            {
-                if (mouseOnPackage == actor)
-                {
-                    float count = m_data.Length / Main.settings.numberOfColumns + 1;
-                    scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
-                }
-            }
-        }
+        //    var v = Input.GetAxis("Mouse ScrollWheel");
+        //    if (v != 0)
+        //    {
+        //        if (mouseOnPackage == actor)
+        //        {
+        //            float count = m_data.Length / Main.settings.numberOfColumns + 1;
+        //            scrollRect.verticalNormalizedPosition += v / count * Main.settings.scrollSpeed;
+        //        }
+        //    }
+        //}
     }
 
 }

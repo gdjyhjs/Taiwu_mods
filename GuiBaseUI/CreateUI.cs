@@ -54,6 +54,8 @@ namespace GuiBaseUI
             tf1.sizeDelta = size == default(Vector2) ? new Vector2(100, 100) : size;
             ScrollRect scrollRect = go1.GetComponent<ScrollRect>();
             scrollRect.horizontal = false;
+            //scrollRect.movementType = ScrollRect.MovementType.Elastic;
+            scrollRect.scrollSensitivity = Main.settings.scrollSensitivity;
 
             //创建Viewport
             GameObject go2 = new GameObject("Viewport", new System.Type[]
@@ -77,6 +79,9 @@ namespace GuiBaseUI
             { typeof(RectTransform), typeof(ContentSizeFitter)});
             go3.layer = Main.Layer;
             RectTransform tf3 = go3.GetComponent<RectTransform>();
+            Image img3 = go3.AddComponent<Image>();
+            img3.color = new Color(0, 0, 0, 0.01f);
+            img3.raycastTarget = true;
             tf3.SetParent(tf2, false);
             tf3.anchorMin = new Vector2(0, 1);
             tf3.anchorMax = new Vector2(1, 1);
@@ -158,7 +163,7 @@ namespace GuiBaseUI
                     scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
                     scrollRect.verticalScrollbarSpacing = -3;
 
-                    Main.hands.Add(new Main.HandData(image4, image6, tf4, tf6));
+                    Main.hands.Add(new Main.HandData(image4, image6, tf4, tf6, scrollRect));
                     break;
                 default:
                     break;
