@@ -2,6 +2,7 @@
 using GuiBaseUI;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GuiScroll
@@ -188,7 +189,6 @@ namespace GuiScroll
                     GameObject go = childData.gameObject;
                     if (idx < m_data.Length)
                     {
-                        go.transform.parent.gameObject.SetActive(true);
                         if (!go.activeSelf)
                         {
                             go.SetActive(true);
@@ -205,6 +205,33 @@ namespace GuiScroll
                         {
                             ClickItem(num2, setItem);
                         });
+
+                        Main.Logger.Log("获取事件触发器 ");
+                        EventTrigger et;
+                        Main.Logger.Log("!!!!! "+go);
+                        et = go.GetComponent<EventTrigger>();
+
+                        bool has_et = et ? true : false;
+
+                        Main.Logger.Log("是否获取到组件|" + has_et);
+                        if (!has_et)
+                        {
+                            Main.Logger.Log("添加组件 ");
+                            et = go.AddComponent<EventTrigger>();
+                        }
+                        else if (et.triggers.Count > 0)
+                        {
+                            Main.Logger.Log("移除事件 " + et.ToString());
+                            et.triggers.RemoveAt(et.triggers.Count - 1);
+                        }
+                        Main.Logger.Log("BBB " + et.ToString() + "  那啥数量 " + et.triggers.Count);
+                        // 鼠标进入事件
+                        EventTrigger.Entry entry = new EventTrigger.Entry();
+                        entry.eventID = EventTriggerType.PointerEnter;
+                        entry.callback.AddListener(delegate { OnMouseEnterSetDragDes(setItem, key, num2, actorFavor); });
+                        Main.Logger.Log("添加鼠标进入事件");
+                        et.triggers.Add(entry);
+                        Main.Logger.Log("cccc " + et.ToString() + "  那啥数量 " + et.triggers.Count);
                     }
                     else
                     {
@@ -213,7 +240,7 @@ namespace GuiScroll
                             go.SetActive(false);
                         }
                     }
-                    if (i == 0 && !go.transform.parent.gameObject.activeSelf)
+                    if (!go.transform.parent.gameObject.activeSelf)
                         go.transform.parent.gameObject.SetActive(true);
                 }
                 else
@@ -222,6 +249,158 @@ namespace GuiScroll
                 }
                 // Main.Logger.Log("物品设置完毕");
             }
+        }
+
+        private void OnMouseEnterSetDragDes(SetItem item, int actorId, int itemId, int actorFavor)
+        {
+            Main.Logger.Log("滑入" + item.ToString());
+            if (item)
+            {
+                DragObject itemDrag = item.itemDrag;
+                if (itemDrag)
+                {
+                    Main.Logger.Log("设置 dragDes " + itemDrag.ToString());
+                    ActorMenu _this = ActorMenu.instance;
+                    int num = DateFile.instance.MianActorID();
+                    itemDrag.dragDes.Clear();
+                    List<Image> list = new List<Image>();
+                    bool flag = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 3, true)) == 1 && (actorId != num || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 5, true)) != 42);
+                    bool flag2 = DateFile.instance.giveItemsDate.ContainsKey(actorId) && DateFile.instance.giveItemsDate[actorId].ContainsKey(itemId);
+                    bool flag3 = flag;
+                    if (flag3)
+                    {
+                        bool flag4 = flag2 || actorId == num || DateFile.instance.ParseInt(DateFile.instance.GetActorDate(actorId, 27, false)) == 1 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 101, true)) <= actorFavor;
+                        if (flag4)
+                        {
+                            for (int i = 0; i < NewActorListScroll.instance.rectContent.childCount; i++)
+                            {
+                                Transform line = NewActorListScroll.instance.rectContent.GetChild(i);
+                                for (int j = 0; j < line.childCount; j++)
+                                {
+                                    Transform child = line.GetChild(j);
+                                    Main.Logger.Log(line + "第" + i + "行 第" + j + "个" + child +"  "+ child.gameObject.activeSelf);
+                                    if (child.gameObject.activeSelf)
+                                    {
+                                        bool flag5 = DateFile.instance.ParseInt(child.name.Split(new char[]
+                                        {
+                        ','
+                                        })[1]) != actorId;
+                                        Main.Logger.Log(flag5+ " flag5");
+                                        if (flag5)
+                                        {
+                                            list.Add(child.GetComponent<Image>());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            flag = false;
+                        }
+                    }
+                    bool flag6 = actorId == num;
+                    if (flag6)
+                    {
+                        bool flag7 = flag && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 5, true)) != 42;
+                        if (flag7)
+                        {
+                            list.Add(ActorMenu.instance.useItemDes[4]);
+                            bool flag8 = DateFile.instance.GetItemNumber(actorId, itemId) > 1;
+                            if (flag8)
+                            {
+                                list.Add(ActorMenu.instance.useItemDes[5]);
+                            }
+                        }
+                        bool flag9 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 42, true)) > 0 && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 901, true)) > 0;
+                        if (flag9)
+                        {
+                            list.Add(ActorMenu.instance.useItemDes[6]);
+                        }
+                    }
+                    else
+                    {
+                        bool flag10 = flag2;
+                        if (flag10)
+                        {
+                            flag = false;
+                        }
+                    }
+                    bool flag11 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 11, true)) < 0;
+                    if (flag11)
+                    {
+                        Transform transform = ActorMenu.instance.actorInjuryHolder[_this.injuryTyp];
+                        for (int j = 0; j < transform.childCount; j++)
+                        {
+                            bool flag12 = !transform.GetChild(j).gameObject.activeSelf;
+                            if (!flag12)
+                            {
+                                Image component = transform.GetChild(j).GetComponent<Image>();
+                                bool flag13 = DateFile.instance.ParseInt(DateFile.instance.injuryDate[DateFile.instance.ParseInt(component.name.Split(new char[]
+                                {
+                        ','
+                                })[1])][1]) > 0;
+                                if (flag13)
+                                {
+                                    list.Add(component);
+                                }
+                            }
+                        }
+                    }
+                    bool flag14 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 12, true)) < 0;
+                    if (flag14)
+                    {
+                        Transform transform2 = ActorMenu.instance.actorInjuryHolder[_this.injuryTyp];
+                        for (int k = 0; k < transform2.childCount; k++)
+                        {
+                            bool flag15 = !transform2.GetChild(k).gameObject.activeSelf;
+                            if (!flag15)
+                            {
+                                Image component2 = transform2.GetChild(k).GetComponent<Image>();
+                                bool flag16 = DateFile.instance.ParseInt(DateFile.instance.injuryDate[DateFile.instance.ParseInt(component2.name.Split(new char[]
+                                {
+                        ','
+                                })[1])][2]) > 0;
+                                if (flag16)
+                                {
+                                    list.Add(component2);
+                                }
+                            }
+                        }
+                    }
+                    bool flag17 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 61, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 62, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 63, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 64, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 65, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 66, true)) < 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 71, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 72, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 73, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 74, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 75, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 76, true)) > 0;
+                    if (flag17)
+                    {
+                        list.Add(ActorMenu.instance.useItemDes[0]);
+                    }
+                    bool flag18 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 13, true)) > 0 || DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2012, true)) > 0;
+                    if (flag18)
+                    {
+                        list.Add(ActorMenu.instance.useItemDes[1]);
+                    }
+                    bool flag19 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 39, true)) < 0;
+                    if (flag19)
+                    {
+                        list.Add(ActorMenu.instance.useItemDes[2]);
+                    }
+                    bool flag20 = list.Count > 0;
+                    if (flag20)
+                    {
+                        for (int l = 0; l < list.Count; l++)
+                        {
+                            Main.Logger.Log(l+" : "+list[l].ToString());
+                            itemDrag.dragDes.Add(list[l]);
+                        }
+                    }
+
+
+
+
+                }
+
+            }
+
+
         }
 
         private static void ClickYes(int itemId, SetItem setItem, bool onEquip, bool tishi, bool click_ctrl, bool click_shift, int actorId,int giveId,Vector3 start, Vector3 target,Sprite sprite)

@@ -14,6 +14,13 @@ namespace GuiScroll
         public ScrollRect scrollRect;
         public RectTransform rectContent;
         private int[] m_data;
+        public static NewActorListScroll instance;
+
+        private void Awake()
+        {
+            instance = this;
+        }
+
         public int[] data
         {
             set
