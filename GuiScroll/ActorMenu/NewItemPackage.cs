@@ -206,32 +206,32 @@ namespace GuiScroll
                             ClickItem(num2, setItem);
                         });
 
-                        Main.Logger.Log("获取事件触发器 ");
+                        // Main.Logger.Log("获取事件触发器 ");
                         EventTrigger et;
-                        Main.Logger.Log("!!!!! "+go);
+                        // Main.Logger.Log("!!!!! "+go);
                         et = go.GetComponent<EventTrigger>();
 
                         bool has_et = et ? true : false;
 
-                        Main.Logger.Log("是否获取到组件|" + has_et);
+                        // Main.Logger.Log("是否获取到组件|" + has_et);
                         if (!has_et)
                         {
-                            Main.Logger.Log("添加组件 ");
+                            // Main.Logger.Log("添加组件 ");
                             et = go.AddComponent<EventTrigger>();
                         }
                         else if (et.triggers.Count > 0)
                         {
-                            Main.Logger.Log("移除事件 " + et.ToString());
+                            // Main.Logger.Log("移除事件 " + et.ToString());
                             et.triggers.RemoveAt(et.triggers.Count - 1);
                         }
-                        Main.Logger.Log("BBB " + et.ToString() + "  那啥数量 " + et.triggers.Count);
+                        // Main.Logger.Log("BBB " + et.ToString() + "  那啥数量 " + et.triggers.Count);
                         // 鼠标进入事件
                         EventTrigger.Entry entry = new EventTrigger.Entry();
                         entry.eventID = EventTriggerType.PointerEnter;
                         entry.callback.AddListener(delegate { OnMouseEnterSetDragDes(setItem, key, num2, actorFavor); });
-                        Main.Logger.Log("添加鼠标进入事件");
+                        // Main.Logger.Log("添加鼠标进入事件");
                         et.triggers.Add(entry);
-                        Main.Logger.Log("cccc " + et.ToString() + "  那啥数量 " + et.triggers.Count);
+                        // Main.Logger.Log("cccc " + et.ToString() + "  那啥数量 " + et.triggers.Count);
                     }
                     else
                     {
@@ -253,13 +253,13 @@ namespace GuiScroll
 
         private void OnMouseEnterSetDragDes(SetItem item, int actorId, int itemId, int actorFavor)
         {
-            Main.Logger.Log("滑入" + item.ToString());
+            // Main.Logger.Log("滑入" + item.ToString());
             if (item)
             {
                 DragObject itemDrag = item.itemDrag;
                 if (itemDrag)
                 {
-                    Main.Logger.Log("设置 dragDes " + itemDrag.ToString());
+                    // Main.Logger.Log("设置 dragDes " + itemDrag.ToString());
                     ActorMenu _this = ActorMenu.instance;
                     int num = DateFile.instance.MianActorID();
                     itemDrag.dragDes.Clear();
@@ -278,14 +278,14 @@ namespace GuiScroll
                                 for (int j = 0; j < line.childCount; j++)
                                 {
                                     Transform child = line.GetChild(j);
-                                    Main.Logger.Log(line + "第" + i + "行 第" + j + "个" + child +"  "+ child.gameObject.activeSelf);
+                                    // Main.Logger.Log(line + "第" + i + "行 第" + j + "个" + child +"  "+ child.gameObject.activeSelf);
                                     if (child.gameObject.activeSelf)
                                     {
                                         bool flag5 = DateFile.instance.ParseInt(child.name.Split(new char[]
                                         {
                         ','
                                         })[1]) != actorId;
-                                        Main.Logger.Log(flag5+ " flag5");
+                                        // Main.Logger.Log(flag5+ " flag5");
                                         if (flag5)
                                         {
                                             list.Add(child.GetComponent<Image>());
@@ -383,24 +383,57 @@ namespace GuiScroll
                     {
                         list.Add(ActorMenu.instance.useItemDes[2]);
                     }
+
+                    if (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 909)) != 0)
+                    {
+                        if (actorId == DateFile.instance.MianActorID())
+                        {
+                            for (int j = 0; j < rectContent.childCount; j++)
+                            {
+                                Transform line = NewActorListScroll.instance.rectContent.GetChild(j);
+                                for (int i = 0; i < line.childCount; i++)
+                                {
+                                    GameObject gameObject = line.GetChild(i).gameObject;
+                                    int num11 = DateFile.instance.ParseInt(gameObject.name.Split(',')[1]);
+                                    if (num11 != itemId && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                    {
+                                        list.Add(gameObject.GetComponent<SetItem>().itemDragDes);
+                                    }
+                                }
+
+                            }
+                        }
+                        else if (DateFile.instance.giveItemsDate.ContainsKey(actorId) && DateFile.instance.giveItemsDate[actorId].ContainsKey(itemId))
+                        {
+                            for (int j = 0; j < rectContent.childCount; j++)
+                            {
+                                Transform line = NewActorListScroll.instance.rectContent.GetChild(j);
+                                for (int i = 0; i < line.childCount; i++)
+                                {
+
+                                    GameObject gameObject2 = line.GetChild(i).gameObject;
+                                    int num11 = DateFile.instance.ParseInt(gameObject2.name.Split(',')[1]);
+                                    if (num11 != itemId && DateFile.instance.giveItemsDate[actorId].ContainsKey(num11) && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                    {
+                                        list.Add(gameObject2.GetComponent<SetItem>().itemDragDes);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
                     bool flag20 = list.Count > 0;
                     if (flag20)
                     {
                         for (int l = 0; l < list.Count; l++)
                         {
-                            Main.Logger.Log(l+" : "+list[l].ToString());
+                            // Main.Logger.Log(l+" : "+list[l].ToString());
                             itemDrag.dragDes.Add(list[l]);
                         }
                     }
-
-
-
-
                 }
-
             }
-
-
         }
 
         private static void ClickYes(int itemId, SetItem setItem, bool onEquip, bool tishi, bool click_ctrl, bool click_shift, int actorId,int giveId,Vector3 start, Vector3 target,Sprite sprite)
