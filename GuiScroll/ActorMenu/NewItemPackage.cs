@@ -1,9 +1,11 @@
 
 using GuiBaseUI;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace GuiScroll
 {
@@ -390,14 +392,18 @@ namespace GuiScroll
                         {
                             for (int j = 0; j < rectContent.childCount; j++)
                             {
-                                Transform line = NewActorListScroll.instance.rectContent.GetChild(j);
+                                Transform line = rectContent.GetChild(j);
                                 for (int i = 0; i < line.childCount; i++)
                                 {
                                     GameObject gameObject = line.GetChild(i).gameObject;
-                                    int num11 = DateFile.instance.ParseInt(gameObject.name.Split(',')[1]);
-                                    if (num11 != itemId && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                    string[] s = gameObject.name.Split(',');
+                                    if(s.Length > 1)
                                     {
-                                        list.Add(gameObject.GetComponent<SetItem>().itemDragDes);
+                                        int num11 = DateFile.instance.ParseInt(s[1]);
+                                        if (num11 != itemId && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                        {
+                                            list.Add(gameObject.GetComponent<SetItem>().itemDragDes);
+                                        }
                                     }
                                 }
 
@@ -407,15 +413,19 @@ namespace GuiScroll
                         {
                             for (int j = 0; j < rectContent.childCount; j++)
                             {
-                                Transform line = NewActorListScroll.instance.rectContent.GetChild(j);
+                                Transform line = rectContent.GetChild(j);
                                 for (int i = 0; i < line.childCount; i++)
                                 {
 
                                     GameObject gameObject2 = line.GetChild(i).gameObject;
-                                    int num11 = DateFile.instance.ParseInt(gameObject2.name.Split(',')[1]);
-                                    if (num11 != itemId && DateFile.instance.giveItemsDate[actorId].ContainsKey(num11) && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                    string[] s = gameObject2.name.Split(',');
+                                    if (s.Length > 1)
                                     {
-                                        list.Add(gameObject2.GetComponent<SetItem>().itemDragDes);
+                                        int num11 = DateFile.instance.ParseInt(s[1]);
+                                        if (num11 != itemId && DateFile.instance.giveItemsDate[actorId].ContainsKey(num11) && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(num11, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                                        {
+                                            list.Add(gameObject2.GetComponent<SetItem>().itemDragDes);
+                                        }
                                     }
                                 }
                             }
@@ -623,8 +633,8 @@ namespace GuiScroll
                         YesOrNoWindow.instance.SetYesOrNoWindow(-1, "触动禁制", "这个东西被锁住了！", false, true);
                         return;
                     }
-
                     bool click_shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+
                     Sprite sprite = setItem.itemIcon.GetComponent<Image>().sprite;
                     Vector3 start = setItem.transform.position, target = new Vector3(-1000, 0, 0);
                     if(click_shift)// 拆全部
@@ -659,6 +669,10 @@ namespace GuiScroll
                         IconMove.Move(start, target, 20, sprite);
                         DiscardItem(actorId, itemId, Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
                     } 
+                }
+                else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) // 合并物品
+                {
+                    MergeItem(actorId, itemId);
                 }
                 else // 使用物品
                 {
@@ -728,6 +742,82 @@ namespace GuiScroll
                 }
             }
 
+        }
+
+        /// <summary>
+        /// 合并物品
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="item_id"></param>
+        private static void MergeItem(int actorId, int item_id)
+        {
+            bool isEnemy7 = ActorMenu.instance.isEnemy;
+            if (isEnemy7)
+            {
+                return;
+            }
+            ActorMenu _this = ActorMenu.instance;
+            List<int> itemSort = DateFile.instance.GetItemSort(new List<int>(_this.GetActorItems(actorId).Keys));
+            foreach (var itemId in itemSort)
+            {
+                if(item_id!= itemId)
+                {
+                    // 点击的物品 int itemId
+                    // 遍历的物品int item_id
+                    if (item_id != itemId && DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 999)) == DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 999)))
+                    {
+                        int num23 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 901, true));
+                        int num24 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 901, true));
+                        int num25 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 902, true));
+                        int num26 = num23;
+                        bool flag27 = num25 > num24;
+                        if (flag27)
+                        {
+                            int num27 = Mathf.Min(num25 - num24, num23);
+                            DateFile.instance.ChangeItemHp(ActorMenu.instance.acotrId, item_id, num27, 0, true);
+                            num26 -= num27;
+                        }
+                        bool flag28 = num26 > 0;
+                        if (flag28)
+                        {
+                            DateFile.instance.ChangeItemHp(ActorMenu.instance.acotrId, item_id, 0, num26, true);
+                            DateFile.instance.ChangeItemHp(ActorMenu.instance.acotrId, item_id, num26, 0, true);
+                        }
+                        bool flag29 = DateFile.instance.itemsChangeDate.ContainsKey(itemId);
+                        bool flag30 = DateFile.instance.itemsChangeDate.ContainsKey(item_id);
+                        int num28 = Mathf.Max(DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 902, true)), 1);
+                        for (int num29 = 0; num29 < 6; num29++)
+                        {
+                            int num30 = 0;
+                            bool flag31 = flag29 && DateFile.instance.itemsChangeDate[itemId].ContainsKey(71 + num29);
+                            if (flag31)
+                            {
+                                num30 += DateFile.instance.itemsChangeDate[itemId][71 + num29] * num23 / num28;
+                            }
+                            bool flag32 = flag30 && DateFile.instance.itemsChangeDate[item_id].ContainsKey(71 + num29);
+                            if (flag32)
+                            {
+                                num30 += DateFile.instance.itemsChangeDate[item_id][71 + num29] * num24 / num28;
+                            }
+                            DateFile.instance.ChangItemDate(item_id, 71 + num29, Mathf.Max(num30, 0), true);
+                        }
+                        for (int num31 = 0; num31 < 16; num31++)
+                        {
+                            DateFile.instance.itemsDate[item_id][50501 + num31] = (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 50501 + num31, true)) * num23 / num28 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 50501 + num31, true)) * num24 / num28).ToString();
+                        }
+                        for (int num32 = 0; num32 < 14; num32++)
+                        {
+                            DateFile.instance.itemsDate[item_id][50601 + num32] = (DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 50601 + num32, true)) * num23 / num28 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(item_id, 50601 + num32, true)) * num24 / num28).ToString();
+                        }
+                        DateFile.instance.LoseItem(ActorMenu.instance.acotrId, itemId, 1, true, true);
+                        if(!(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            ActorMenu.instance.UpdateItems(actorId, ActorMenu.instance.itemTyp);
         }
 
         public static void DiscardItem(int actorId, int itemId, bool click_shift)

@@ -233,7 +233,7 @@ namespace GuiWarehouse
                                 go.SetActive(true);
                             }
                             go.name = "WarehouseItem," + num5;
-                            childData.setItem.SetWarehouseItemIcon(num4, num5, cantTake);
+                            childData.setItem.SetWarehouseItemIcon(num4, num5, cantTake, Warehouse.instance.actorItemDes, 202);
                         }
                         else
                         {

@@ -11,6 +11,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Diagnostics;
 using UnityEngine.EventSystems;
+using System.IO;
 
 namespace GuiTest
 {
@@ -30,6 +31,7 @@ namespace GuiTest
         static Transform root;
         static int x, y, w, h;
         static bool draw_xywh;
+        static string mod_path;
 
         public static bool Load(UnityModManager.ModEntry modEntry)
         {
@@ -39,6 +41,7 @@ namespace GuiTest
             modEntry.OnToggle = OnToggle;
             modEntry.OnGUI = OnGUI;
             modEntry.OnSaveGUI = OnSaveGUI;
+            mod_path = modEntry.Path;
             #endregion
 
             HarmonyInstance harmony = HarmonyInstance.Create(modEntry.Info.Id);
@@ -131,15 +134,50 @@ namespace GuiTest
             private void OnGUI()
             {
                 GUILayout.Label(title, GUILayout.Width(300));
-                GUILayout.Label("x:");
-                int.TryParse(GUILayout.TextField(x.ToString()), out x);
-                GUILayout.Label("y:");
-                int.TryParse(GUILayout.TextField(y.ToString()), out y);
-                GUILayout.Label("w:");
-                int.TryParse(GUILayout.TextField(w.ToString()), out w);
-                GUILayout.Label("h:");
-                int.TryParse(GUILayout.TextField(h.ToString()), out h);
-                draw_xywh = GUILayout.Toggle(draw_xywh, "开关");
+                GUILayout.Label("x:", GUILayout.Width(50));
+                int.TryParse(GUILayout.TextField(x.ToString(), GUILayout.Width(50)), out x);
+                GUILayout.Label("y:", GUILayout.Width(50));
+                int.TryParse(GUILayout.TextField(y.ToString(), GUILayout.Width(50)), out y);
+                GUILayout.Label("w:", GUILayout.Width(50));
+                int.TryParse(GUILayout.TextField(w.ToString(), GUILayout.Width(50)), out w);
+                GUILayout.Label("h:", GUILayout.Width(50));
+                int.TryParse(GUILayout.TextField(h.ToString(), GUILayout.Width(50)), out h);
+                draw_xywh = GUILayout.Toggle(draw_xywh, "开关", GUILayout.Width(50));
+                if (GUILayout.Button("测试", GUILayout.Width(50)))
+                {
+                    Main.Logger.Log("路径： "+mod_path);
+                    //从文件夹里加载包
+                    var my_ui_ab = AssetBundle.LoadFromFile(mod_path+@"\ui.assetbundle");
+                    if (my_ui_ab == null)
+                    {
+                        Main.Logger.Log("error : Failed to load AssetBundle!");
+                    }
+                    else
+                    {
+                        //从Bundle包中加载名字为：ququ_adventure 的资源，加载为 GameObject
+                        var prefab = my_ui_ab.LoadAsset<GameObject>("ququ_adventure");
+                        GameObject go = Instantiate(prefab);
+                        Canvas canvas = FindObjectOfType<Canvas>();
+                        go.transform.SetParent(canvas.transform, false);
+                        Text t = go.GetComponentInChildren<Text>();
+                        t.font = DateFile.instance.font;
+                        t.text = "太吾世界 蛐蛐 角斗场";
+                        // asset 包用完就删 节约内存
+                        my_ui_ab.Unload(true);
+                    }
+                }
+                if (GUILayout.Button("图片", GUILayout.Width(50)))
+                {
+                    Canvas canvas = FindObjectOfType<Canvas>();
+                    List<UIImage> allImage = new List<UIImage>();
+                    SaveAllImage(canvas.transform, allImage);
+                    for (int i = 0; i < allImage.Count; i++)
+                    {
+                        var item = allImage[i];
+                        Sprite sprite = item.sprite;
+                        var texture = sprite.texture;
+                    }
+                }
 
                 // 1280 720
                 // 背包 265 295 505 290    
@@ -153,7 +191,41 @@ namespace GuiTest
                 {
                     GUI.Box(new Rect(x, y, w, h), "");
                 }
+
             }
+        }
+
+        class UIImage
+        {
+            public Sprite sprite;
+            public string ui_path;
+        }
+        static void SaveAllImage(Transform tf, List<UIImage> allImage = null, string path = "")
+        {
+            if(null == allImage)
+            {
+                allImage = new List<UIImage>();
+            }
+            string s = path;
+            s += "/"+tf.name;
+            Image img = tf.GetComponent<Image>();
+            if (img&&img.sprite)
+            {
+                allImage.Add(new UIImage() { sprite = img.sprite, ui_path = path });
+            }
+            for (int i = 0; i < tf.childCount; i++)
+            {
+                Transform child = tf.GetChild(i);
+                SaveAllImage(child, allImage, path);
+            }
+        }
+        static void SaveTextureToFile(Texture2D texture, string fileName)
+        {
+            var bytes = texture.EncodeToPNG();
+            var file = File.Open(mod_path + "/" + fileName+".png", FileMode.Create);
+            var binary = new BinaryWriter(file);
+            binary.Write(bytes);
+            file.Close();
         }
 
 
@@ -190,41 +262,41 @@ namespace GuiTest
         //    }
         //}
 
-        //[HarmonyPatch(typeof(DropObject), "OnDrop")]
-        //public static class DropObject_OnDrop_Patch
-        //{
-        //    public static void Postfix(PointerEventData eventData)
-        //    {
-        //        try
-        //        {
-        //            Main.Logger.Log("dropObjectTyp = " + DropUpdate.instance.updateId);
-        //            Main.Logger.Log(eventData.ToString());
+        [HarmonyPatch(typeof(DropObject), "OnDrop")]
+        public static class DropObject_OnDrop_Patch
+        {
+            public static void Postfix(PointerEventData eventData)
+            {
+                try
+                {
+                    Main.Logger.Log("dropObjectTyp = " + DropUpdate.instance.updateId);
+                    Main.Logger.Log(eventData.ToString());
 
-        //            int id = DateFile.instance.ParseInt(eventData.pointerEnter.gameObject.name.Split(',')[1]);
-        //            Dictionary<int, string> data1;
-        //            DateFile.instance.itemsDate.TryGetValue(id, out data1);
-        //            Main.Logger.Log("打印物品 pointerEnter =============================== ");
-        //            foreach (var item in data1)
-        //            {
-        //                Main.Logger.Log(item.Key + " " + item.Value);
-        //            }
+                    int id = DateFile.instance.ParseInt(eventData.pointerEnter.gameObject.name.Split(',')[1]);
+                    Dictionary<int, string> data1;
+                    DateFile.instance.itemsDate.TryGetValue(id, out data1);
+                    Main.Logger.Log("打印物品 pointerEnter =============================== ");
+                    foreach (var item in data1)
+                    {
+                        Main.Logger.Log(item.Key + " " + item.Value);
+                    }
 
-        //            int id2 = DateFile.instance.ParseInt(eventData.pointerDrag.gameObject.name.Split(',')[1]);
-        //            Dictionary<int, string> data2;
-        //            DateFile.instance.itemsDate.TryGetValue(id2, out data2);
-        //            Main.Logger.Log("打印物品 pointerDrag =============================== ");
-        //            foreach (var item in data2)
-        //            {
-        //                Main.Logger.Log(item.Key + " " + item.Value);
-        //            }
-        //            Main.Logger.Log("打印完毕  =============================== ");
-        //        }
-        //        catch
-        //        {
+                    int id2 = DateFile.instance.ParseInt(eventData.pointerDrag.gameObject.name.Split(',')[1]);
+                    Dictionary<int, string> data2;
+                    DateFile.instance.itemsDate.TryGetValue(id2, out data2);
+                    Main.Logger.Log("打印物品 pointerDrag =============================== ");
+                    foreach (var item in data2)
+                    {
+                        Main.Logger.Log(item.Key + " " + item.Value);
+                    }
+                    Main.Logger.Log("打印完毕  =============================== ");
+                }
+                catch
+                {
 
-        //        }
-        //    }
-        //}
+                }
+            }
+        }
 
         //[HarmonyPatch(typeof(DateFile), "DragObjectEnd")]
         //public static class DateFile_DragObjectEnd_Patch
