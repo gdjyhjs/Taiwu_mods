@@ -60,7 +60,6 @@ namespace GuiTest
             return true;
         }
 
-        static string title = "鬼的测试";
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)
         {
             enabled = value;
@@ -95,6 +94,7 @@ namespace GuiTest
 
         class TestClick : MonoBehaviour
         {
+            List<UIImage> png_list;
             void Update()
             {
                 if (Input.GetMouseButtonDown(0))
@@ -113,6 +113,8 @@ namespace GuiTest
                     }
                 }
             }
+
+
             public GameObject ClickObject()
             {
                 PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
@@ -131,52 +133,66 @@ namespace GuiTest
                     return null;
                 }
             }
+
             private void OnGUI()
             {
-                GUILayout.Label(title, GUILayout.Width(300));
-                GUILayout.Label("x:", GUILayout.Width(50));
-                int.TryParse(GUILayout.TextField(x.ToString(), GUILayout.Width(50)), out x);
-                GUILayout.Label("y:", GUILayout.Width(50));
-                int.TryParse(GUILayout.TextField(y.ToString(), GUILayout.Width(50)), out y);
-                GUILayout.Label("w:", GUILayout.Width(50));
-                int.TryParse(GUILayout.TextField(w.ToString(), GUILayout.Width(50)), out w);
-                GUILayout.Label("h:", GUILayout.Width(50));
-                int.TryParse(GUILayout.TextField(h.ToString(), GUILayout.Width(50)), out h);
-                draw_xywh = GUILayout.Toggle(draw_xywh, "开关", GUILayout.Width(50));
-                if (GUILayout.Button("测试", GUILayout.Width(50)))
-                {
-                    Main.Logger.Log("路径： "+mod_path);
-                    //从文件夹里加载包
-                    var my_ui_ab = AssetBundle.LoadFromFile(mod_path+@"\ui.assetbundle");
-                    if (my_ui_ab == null)
-                    {
-                        Main.Logger.Log("error : Failed to load AssetBundle!");
-                    }
-                    else
-                    {
-                        //从Bundle包中加载名字为：ququ_adventure 的资源，加载为 GameObject
-                        var prefab = my_ui_ab.LoadAsset<GameObject>("ququ_adventure");
-                        GameObject go = Instantiate(prefab);
-                        Canvas canvas = FindObjectOfType<Canvas>();
-                        go.transform.SetParent(canvas.transform, false);
-                        Text t = go.GetComponentInChildren<Text>();
-                        t.font = DateFile.instance.font;
-                        t.text = "太吾世界 蛐蛐 角斗场";
-                        // asset 包用完就删 节约内存
-                        my_ui_ab.Unload(true);
-                    }
-                }
+                //GUILayout.Label(title, GUILayout.Width(300));
+                //GUILayout.Label("x:", GUILayout.Width(50));
+                //int.TryParse(GUILayout.TextField(x.ToString(), GUILayout.Width(50)), out x);
+                //GUILayout.Label("y:", GUILayout.Width(50));
+                //int.TryParse(GUILayout.TextField(y.ToString(), GUILayout.Width(50)), out y);
+                //GUILayout.Label("w:", GUILayout.Width(50));
+                //int.TryParse(GUILayout.TextField(w.ToString(), GUILayout.Width(50)), out w);
+                //GUILayout.Label("h:", GUILayout.Width(50));
+                //int.TryParse(GUILayout.TextField(h.ToString(), GUILayout.Width(50)), out h);
+                //draw_xywh = GUILayout.Toggle(draw_xywh, "开关", GUILayout.Width(50));
+                //if (GUILayout.Button("测试", GUILayout.Width(50)))
+                //{
+                //    Main.Logger.Log("路径： "+mod_path);
+                //    //从文件夹里加载包
+                //    var my_ui_ab = AssetBundle.LoadFromFile(mod_path+@"\ui.assetbundle");
+                //    if (my_ui_ab == null)
+                //    {
+                //        Main.Logger.Log("error : Failed to load AssetBundle!");
+                //    }
+                //    else
+                //    {
+                //        //从Bundle包中加载名字为：ququ_adventure 的资源，加载为 GameObject
+                //        var prefab = my_ui_ab.LoadAsset<GameObject>("ququ_adventure");
+                //        GameObject go = Instantiate(prefab);
+                //        Canvas canvas = FindObjectOfType<Canvas>();
+                //        go.transform.SetParent(canvas.transform, false);
+                //        Text t = go.GetComponentInChildren<Text>();
+                //        t.font = DateFile.instance.font;
+                //        t.text = "太吾世界 蛐蛐 角斗场";
+                //        // asset 包用完就删 节约内存
+                //        my_ui_ab.Unload(true);
+                //    }
+                //}
                 if (GUILayout.Button("图片", GUILayout.Width(50)))
                 {
                     Canvas canvas = FindObjectOfType<Canvas>();
                     List<UIImage> allImage = new List<UIImage>();
                     SaveAllImage(canvas.transform, allImage);
+                    Dictionary<Sprite, UIImage> data = new Dictionary<Sprite, UIImage>();
                     for (int i = 0; i < allImage.Count; i++)
                     {
                         var item = allImage[i];
-                        Sprite sprite = item.sprite;
-                        var texture = sprite.texture;
+                        if (!data.ContainsKey(item.sprite))
+                            data.Add(item.sprite, item);
                     }
+
+                    png_list = new List<UIImage>();
+                    foreach (var item in data)
+                    {
+                        png_list.Add(item.Value);
+                    }
+                    Main.Logger.Log("圖片總數 : " + png_list.Count);
+                }
+
+                if (null!=png_list)
+                {
+                    GUI.DrawTexture(new Rect(0, 0, width, height), cur_texture);
                 }
 
                 // 1280 720
@@ -187,10 +203,10 @@ namespace GuiTest
                 // 装备 0.205 0.541 0.394 0.319
                 // 同道 0.058 0.104 0.121 0.791
 
-                if (draw_xywh)
-                {
-                    GUI.Box(new Rect(x, y, w, h), "");
-                }
+                //if (draw_xywh)
+                //{
+                //    GUI.Box(new Rect(x, y, w, h), "");
+                //}
 
             }
         }
@@ -219,14 +235,24 @@ namespace GuiTest
                 SaveAllImage(child, allImage, path);
             }
         }
-        static void SaveTextureToFile(Texture2D texture, string fileName)
-        {
-            var bytes = texture.EncodeToPNG();
-            var file = File.Open(mod_path + "/" + fileName+".png", FileMode.Create);
-            var binary = new BinaryWriter(file);
-            binary.Write(bytes);
-            file.Close();
-        }
+        //static void SaveTextureToFile(Sprite sprite, string fileName)
+        //{
+        //    try
+        //    {
+        //        string path = mod_path + "/" + fileName + ".png";
+        //        Main.Logger.Log(texture + " 保存图片 " + path);
+        //        var bytes = sprite.;
+        //        var file = File.Open(mod_path + "/" + path + ".png", FileMode.Create);
+        //        var binary = new BinaryWriter(file);
+        //        binary.Write(bytes);
+        //        file.Close();
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+        //}
 
 
         //[HarmonyPatch(typeof(ActorMenu), "CloseActorMenu")]
