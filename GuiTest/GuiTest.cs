@@ -134,6 +134,11 @@ namespace GuiTest
                 }
             }
 
+
+            Vector2 scrollPosition;
+            public UIImage[] data;
+            int data_height;
+            int data_width;
             private void OnGUI()
             {
                 //GUILayout.Label(title, GUILayout.Width(300));
@@ -169,30 +174,78 @@ namespace GuiTest
                 //        my_ui_ab.Unload(true);
                 //    }
                 //}
-                if (GUILayout.Button("图片", GUILayout.Width(50)))
-                {
-                    Canvas canvas = FindObjectOfType<Canvas>();
-                    List<UIImage> allImage = new List<UIImage>();
-                    SaveAllImage(canvas.transform, allImage);
-                    Dictionary<Sprite, UIImage> data = new Dictionary<Sprite, UIImage>();
-                    for (int i = 0; i < allImage.Count; i++)
-                    {
-                        var item = allImage[i];
-                        if (!data.ContainsKey(item.sprite))
-                            data.Add(item.sprite, item);
-                    }
 
-                    png_list = new List<UIImage>();
-                    foreach (var item in data)
+                if (null != this.data)
+                {
+
+                    int height = 0;
+                    height = 0;
+                    scrollPosition = GUI.BeginScrollView(new Rect(0, 0, Screen.width, Screen.height), scrollPosition, new Rect(0, 0, data_width, data_height), false, true);
+                    foreach (var item in this.data)
                     {
-                        png_list.Add(item.Value);
+                        GUI.Label(new Rect(0, height, Screen.width, 40), item.ui_path);
+                        height += 40;
+                        Texture2D texture = item.sprite.texture;
+                        GUI.DrawTexture(new Rect(0, height, texture.width, texture.height), texture);
+                        height += texture.height;
                     }
-                    Main.Logger.Log("圖片總數 : " + png_list.Count);
+                    GUI.EndScrollView();
                 }
-
-                if (null!=png_list)
+                else
                 {
-                    GUI.DrawTexture(new Rect(0, 0, width, height), cur_texture);
+                    if (GUILayout.Button("图片", GUILayout.Width(50)))
+                    {
+                        int idx = 0;
+                        png_list = new List<UIImage>();
+                        Canvas canvas = FindObjectOfType<Canvas>();
+                        while (canvas)
+                        {
+                            Dictionary<Sprite, UIImage> data = new Dictionary<Sprite, UIImage>();
+                            Image[] images = canvas.transform.root.GetComponentsInChildren<Image>();
+                            foreach (var item in images)
+                            {
+                                Sprite sprite = item.sprite;
+                                if (sprite && !data.ContainsKey(sprite))
+                                {
+                                    string ui_path = "";
+                                    Transform tf = item.transform;
+                                    while (tf)
+                                    {
+                                        ui_path = "/" + tf.name + ui_path;
+                                        tf = tf.parent;
+                                    }
+                                    UIImage uIImage = new UIImage() { sprite = sprite, ui_path = ui_path };
+                                    Main.Logger.Log(idx++ + " 圖片 : " + sprite.name + " " + ui_path);
+                                    data_height += sprite.texture.height;
+                                    if (data_width < sprite.texture.width)
+                                        data_width = sprite.texture.width;
+                                    data.Add(item.sprite, uIImage);
+                                    png_list.Add(uIImage);
+                                }
+                            }
+                            Main.Logger.Log(canvas.name + " 圖片總數 : " + png_list.Count);
+                            var xx = canvas.gameObject.GetComponent<CanvasScaler>();
+                            if (xx)
+                            {
+                                Main.Logger.Log(xx.uiScaleMode.ToString());
+                                Main.Logger.Log(xx.referenceResolution .ToString());
+                                Main.Logger.Log(xx.screenMatchMode .ToString());
+                                Main.Logger.Log(xx.matchWidthOrHeight.ToString());
+                                Main.Logger.Log(xx.referencePixelsPerUnit.ToString());
+                            }
+                            else
+                            {
+                                Main.Logger.Log("木有 xx");
+                            }
+
+
+
+                            canvas.transform.root.gameObject.SetActive(false);
+                            canvas = FindObjectOfType<Canvas>();
+                        }
+                        this.data = png_list.ToArray();
+                        Main.Logger.Log(" 图片 : " + this.data.Length);
+                    }
                 }
 
                 // 1280 720

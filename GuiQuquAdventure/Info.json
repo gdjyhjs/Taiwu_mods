@@ -1,0 +1,7 @@
+﻿{
+  "Id": "GuiQuquAdventure",
+  "DisplayName": "鬼的蛐蛐竞技场",
+  "Version": "1.0.0",
+  "AssemblyName": "GuiQuquAdventure.dll",
+  "EntryMethod": "GuiQuquAdventure.Main.Load"
+}

@@ -1,7 +1,0 @@
-﻿{
-  "Id": "GuQuquAdventure",
-  "DisplayName": "鬼的蛐蛐历练",
-  "Version": "1.0.0",
-  "AssemblyName": "GuQuquAdventure.dll",
-  "EntryMethod": "GuQuquAdventure.Main.Load"
-}
