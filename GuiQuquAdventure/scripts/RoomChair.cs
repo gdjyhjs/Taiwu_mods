@@ -25,17 +25,40 @@ namespace GuiQuquAdventure
             #if !TAIWU_GAME
             GameObject go = GameObject.Instantiate(Tools.GetActorFaceSample());
             actorFace = go.GetComponent<ActorFace>();
-            go.transform.SetParent(tImage, false);
-            go.transform.localScale = Vector3.one * .5f;
+
+            RectTransform tf = (RectTransform)go.transform;
+            tf.SetParent(tImage, false);
+            tf.localScale = Vector3.one * 0.1f;
+            tf.anchoredPosition = new Vector2(0, -14);
 #endif
         }
 
+
+        float size = 0.3f;
+        float x = 0;
+        float y = 0;
+        PlayerData p;
+        void OnGUI()
+        {
+            if (null != p && p.ip != "0")
+            {
+                if (GUI.Button(new Rect(50, 150, 100, 50), "调整RoomChair"))
+                {
+                    GameObject go = actorFace.gameObject;
+                    RectTransform tf = (RectTransform)go.transform;
+                    tf.anchoredPosition = new Vector2(x, y);
+                    tf.localScale = Vector3.one * size;
+                }
+                float.TryParse(GUI.TextField(new Rect(150, 150, 100, 50), size.ToString()), out size);
+                float.TryParse(GUI.TextField(new Rect(250, 150, 100, 50), x.ToString()), out x);
+                float.TryParse(GUI.TextField(new Rect(350, 150, 100, 50), y.ToString()), out y);
+            }
+        }
         public void SetPlayerShow(bool show, int desk_id, int pos)
         {
             this.desk_id = desk_id;
             this.show_player = show;
             this.pos = pos;
-            gImage.SetActive(show);
             if (show)
             {
                 PlayerData playerData = null;
@@ -49,15 +72,23 @@ namespace GuiQuquAdventure
                     }
                 }
 #if !TAIWU_GAME
-                if (null == playerData && playerData.ip != "0")
+                p = playerData;
+                if (null != playerData && playerData.ip != "0")
                 {
-                        Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false);
+                        Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
                 }
                 else
                 {
-                    Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false, true);
+                    //Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false, true);
                 }
 #endif
+            }
+            else
+            {
+#if !TAIWU_GAME
+                actorFace.UpdateFace(0, 0, 0, 0, new int[] { 0 }, null, 0);
+#endif
+
             }
         }
 

@@ -39,7 +39,6 @@ namespace GuiQuquAdventure
                 {
                     GameObject go = Instantiate<GameObject>(prefab);
                     go.transform.SetParent(transform, false);
-                    go.SetActive(true);
                     item = go.AddComponent<PlayerItem>();
                     items.Add(item);
                 }

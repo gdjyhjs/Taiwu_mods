@@ -49,7 +49,7 @@ namespace GuiQuquAdventure
         }
 #endif
 
-        public static void UpdateFace(ActorFace actorFace, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = false, bool flag = false)
+        public static void UpdateFace(ActorFace actorFace, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = false)
         {
             if (faceDate.Length == 1)
             {
@@ -79,8 +79,8 @@ namespace GuiQuquAdventure
             }
             else
             {
-                //bool flag = life || false || false;
-                if (flag)
+                bool flag = life || false || false;
+                if (!flag)
                 {
                     actorFace.ageImage.gameObject.SetActive(value: false);
                     actorFace.nose.gameObject.SetActive(value: false);

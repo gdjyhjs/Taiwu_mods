@@ -32,22 +32,49 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
             GameObject go = GameObject.Instantiate(Tools.GetActorFaceSample());
             actorFace = go.GetComponent<ActorFace>();
-            go.transform.SetParent(tImage, false);
-            go.transform.localScale = Vector3.one * .3f;
+
+
+            RectTransform tf = (RectTransform)go.transform;
+            tf.SetParent(tImage, false);
+            tf.localScale = Vector3.one * 0.2f;
+            tf.anchoredPosition = new Vector2(-5, -50);
 #endif
         }
 
+        //float size = 0.3f;
+        //float x = 0;
+        //float y = 0;
+        //void OnGUI()
+        //{
+        //    if (GUI.Button(new Rect(50, 50, 100, 50), "调整PlayerItem"))
+        //    {
+        //        GameObject go = actorFace.gameObject;
+        //        RectTransform tf = (RectTransform)go.transform;
+        //        tf.anchoredPosition = new Vector2(x, y);
+        //        tf.localScale = Vector3.one * size;
+        //    }
+        //    float.TryParse(GUI.TextField(new Rect(150, 50, 100, 50), size.ToString()), out size);
+        //    float.TryParse(GUI.TextField(new Rect(250, 50, 100, 50), x.ToString()), out x);
+        //    float.TryParse(GUI.TextField(new Rect(350, 50, 100, 50), y.ToString()), out y);
+        //}
+
         public void SetData(PlayerData playerData)
         {
-            if(this.ip == playerData.ip && this.desk_idx == playerData.desk_idx && this.observer == playerData.observer)
-            {
-                return;
-            }
-
             if (!gameObject.activeSelf)
             {
                 gameObject.SetActive(true);
             }
+#if !TAIWU_GAME
+            if (null != playerData && playerData.ip != "0")
+            {
+                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
+            }
+#endif
+            if (this.ip == playerData.ip && this.desk_idx == playerData.desk_idx && this.observer == playerData.observer)
+            {
+                return;
+            }
+
             text.text = playerData.name ;
             if (playerData.desk_idx == -1)
             {
@@ -65,12 +92,6 @@ namespace GuiQuquAdventure
             this.ip = playerData.ip;
             this.desk_idx = playerData.desk_idx;
             this.observer = playerData.observer;
-#if !TAIWU_GAME
-            if (playerData.ip != "0")
-            {
-                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false);
-            }
-#endif
         }
 
         void SetColor(string ip)

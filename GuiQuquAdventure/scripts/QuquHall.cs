@@ -10,7 +10,7 @@ namespace GuiQuquAdventure
     {
         public static QuquHall instance;
         float next_auto_send_time = 0;
-        float auto_send_interval = 10;
+        float auto_send_interval = 1;
         DataFile dataFile;
         GameObject all;
         GameObject hall;
@@ -241,7 +241,7 @@ namespace GuiQuquAdventure
         public void GetData(string chat_content = null,string chat_param = null)
         {
             SetSelfData();
-            next_auto_send_time += auto_send_interval * 10;
+            next_auto_send_time = Time.time + auto_send_interval * 2;
             if (self.desk_idx == -1 && self.level == -1) // 获取大厅数据
             {
                 dataFile.GetHallData(OnHallData, self.name, self.GetImage());
@@ -258,9 +258,7 @@ namespace GuiQuquAdventure
 
         void OnHallData(string error, long time_stamp, RoomData[] roomdata)
         {
-            float new_time = next_auto_send_time + auto_send_interval;
-            if (new_time < next_auto_send_time)
-                next_auto_send_time = new_time;
+            next_auto_send_time = Time.time + auto_send_interval*2;
             if (null == error)
             {
                 inputField.text = "";
@@ -299,9 +297,7 @@ namespace GuiQuquAdventure
 
         void OnRoomData(string error, long time_stamp, RoomData roomdata)
         {
-            float new_time = next_auto_send_time + auto_send_interval/10;
-            if (new_time < next_auto_send_time)
-                next_auto_send_time = new_time;
+            next_auto_send_time = Time.time + auto_send_interval;
             if (null == error)
             {
                 inputField.text = "";
@@ -346,9 +342,7 @@ namespace GuiQuquAdventure
 
         void OnDeskData(string error, long time_stamp, DeskData deskData, int battle)
         {
-            float new_time = next_auto_send_time + auto_send_interval / 15;
-            if (new_time < next_auto_send_time)
-                next_auto_send_time = new_time;
+            next_auto_send_time = Time.time + auto_send_interval /2;
             if (null == error)
             {
                 inputField.text = "";

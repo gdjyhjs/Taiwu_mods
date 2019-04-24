@@ -44,26 +44,49 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
             GameObject go = GameObject.Instantiate(Tools.GetActorFaceSample());
             actorFace = go.GetComponent<ActorFace>();
-            go.transform.SetParent(tImage, false);
-            go.transform.localScale = Vector3.one * .8f;
+
+            RectTransform tf = (RectTransform)go.transform;
+            tf.SetParent(tImage, false);
+            tf.localScale = Vector3.one * 0.45f;
+            tf.anchoredPosition = new Vector2(0, -80);
 #endif
         }
+
+        //float size = 0.3f;
+        //float x = 0;
+        //float y = 0;
+        //PlayerData p;
+        //void OnGUI()
+        //{
+        //    if (null != p)
+        //    {
+        //        if (GUI.Button(new Rect(50, 250, 100, 50), "调整PlayerObj"))
+        //        {
+        //            GameObject go = actorFace.gameObject;
+        //            RectTransform tf = (RectTransform)go.transform;
+        //            tf.anchoredPosition = new Vector2(x, y);
+        //            tf.localScale = Vector3.one * size;
+        //        }
+        //        float.TryParse(GUI.TextField(new Rect(150, 250, 100, 50), size.ToString()), out size);
+        //        float.TryParse(GUI.TextField(new Rect(250, 250, 100, 50), x.ToString()), out x);
+        //        float.TryParse(GUI.TextField(new Rect(350, 250, 100, 50), y.ToString()), out y);
+        //    }
+        //}
 
 
         public void SetData(PlayerData playerData)
         {
             this.data = playerData;
 
-            if(playerData.ip == "0") // 空位
+            if (playerData.ip == "0") // 空位
             {
                 text.text = "虚位以待";
-                gImage.SetActive(false);
                 text.color = Color.gray;
                 shadow.effectColor = Color.white;
+                actorFace.UpdateFace(0, 0, 0, 0, new int[] { 1 }, null, 0);
             }
             else
             {
-                gImage.SetActive(true);
                 if (playerData.observer==0) // 选手
                 {
                     text.text = string.Format(name_format_str, playerData.name, ready_state_str[playerData.ready]);
@@ -88,13 +111,13 @@ namespace GuiQuquAdventure
                 SetColor(playerData.ip);
             }
 #if !TAIWU_GAME
-            if(playerData.ip != "0")
+            if(null!= playerData && playerData.ip != "0")
             {
-                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false);
+                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
             }
             else
             {
-                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false, true);
+                //Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false, true);
             }
 #endif
         }
