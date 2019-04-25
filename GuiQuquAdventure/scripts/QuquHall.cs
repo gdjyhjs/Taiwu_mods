@@ -198,15 +198,18 @@ namespace GuiQuquAdventure
 
         void SetPeopleNum()
         {
-            RoomData[] roomDatas = DataFile.instance.hall_data.room_data;
-            if(null!= roomDatas)
+            if(null!= DataFile.instance.hall_data)
             {
-                int num = 0;
-                for (int i = 0; i < roomDatas.Length; i++)
+                RoomData[] roomDatas = DataFile.instance.hall_data.room_data;
+                if (null != roomDatas)
                 {
-                    num += roomDatas[i].player_data.Length;
+                    int num = 0;
+                    for (int i = 0; i < roomDatas.Length; i++)
+                    {
+                        num += roomDatas[i].people_num;
+                    }
+                    tPeopleNum.text = num + "人在线";
                 }
-                tPeopleNum.text = num + "人在线";
             }
         }
 
