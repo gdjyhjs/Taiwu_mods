@@ -5,6 +5,18 @@ namespace GuiQuquAdventure
 {
     public static class Tools
     {
+        public static T GetChildComponent<T>(Transform parent, string path) where T : Component
+        {
+            return parent.Find(path).GetComponent<T>();
+        }
+        public static GameObject GetChildObj(Transform parent, string path)
+        {
+            return parent.Find(path).gameObject;
+        }
+        public static Transform GetChildTf(Transform parent, string path)
+        {
+            return parent.Find(path);
+        }
         public static Color GetShadowColor(Color color)
         {
             int r = (int)color.r * 255;

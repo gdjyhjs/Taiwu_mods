@@ -45,7 +45,6 @@ namespace GuiQuquAdventure
 
             GameObject go = new GameObject();
             UnityEngine.GameObject.DontDestroyOnLoad(go);
-            Main.Logger.Log("添加维持大厅");
             go.AddComponent<MaintainHall>();
 
             return true;
@@ -69,7 +68,6 @@ namespace GuiQuquAdventure
 
         public static void LoadUI()
         {
-            Main.Logger.Log("obj " + !obj);
             if (!obj)
             {
                 //从文件夹里加载包
@@ -88,9 +86,6 @@ namespace GuiQuquAdventure
                 Canvas canvas = GameObject.FindObjectOfType<Canvas>();
                 obj.transform.SetParent(canvas.transform, false);
                 obj.AddComponent<QuquHall>();
-
-
-                Main.Logger.Log("obj : " + obj.ToString());
             }
         }
     }
@@ -99,33 +94,27 @@ namespace GuiQuquAdventure
     {
         void Start()
         {
-            Main.Logger.Log("Start 维持大厅");
             StartCoroutine(MaintainWhile());
         }
 
         IEnumerator MaintainWhile()
         {
-            Main.Logger.Log("携程1");
             yield return null;
             while (true)
             {
-                Main.Logger.Log("携程2");
                 yield return new WaitForSeconds(5);
-                Main.Logger.Log("携程3");
                 bool open = false;
                 try
                 {
                     if (Main.obj == null && DateFile.instance != null && ActorMenu.instance != null && Loading.instance != null && Loading.instance.gameObject.activeSelf)
                     {
                         string name = DateFile.instance.GetActorName();
-                        Main.Logger.Log("name = " + name);
                         if (null != name)
                             open = true;
                     }
                 }
                 catch (Exception e)
                 {
-                    Main.Logger.Log("出错 " + e.Message);
                     open = false;
                     throw;
                 }

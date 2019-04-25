@@ -18,7 +18,6 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
-        bool show = false;
         readonly static string name_format_str = "{0}\n<size=22>{1}</size>";
         readonly static string[] ready_state_str = new string[]
         {

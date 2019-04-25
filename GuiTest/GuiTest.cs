@@ -85,7 +85,14 @@ namespace GuiTest
 
         static string GetPath(Transform go, string s = "")
         {
-            s += go.name + "/";
+            if (s == "")
+            {
+                s = go.name;
+            }
+            else
+            {
+                s = go.name + "/" + s;
+            }
             if (go.parent)
             {
                 return GetPath(go.parent, s);
@@ -131,75 +138,75 @@ namespace GuiTest
                     //var f_isShowActorMenu = typeof(ActorMenu).GetField("isShowActorMenu", BindingFlags.NonPublic | BindingFlags.Instance);
                     //return (bool)f_isShowActorMenu.GetValue(ActorMenu.instance);
                     QuquBattleSystem self = QuquBattleSystem.instance;
-                    //LogObj("setBattleSpeedHolder", self.setBattleSpeedHolder);
-                    //LogList("setBattleSpeedToggle", self.setBattleSpeedToggle);
-                    //LogObj("ququBattleWindow", self.ququBattleWindow);
-                    //LogObj("actorBack", self.actorBack);
-                    //LogObj("enemyBack", self.enemyBack);
-                    //LogObj("chooseActorButton", self.chooseActorButton);
-                    //LogList("ququBattleBack", self.ququBattleBack);
-                    //LogObj("actorFace", self.actorFace);
-                    //LogObj("enemyFace", self.enemyFace);
-                    //LogObj("actorNameText", self.actorNameText);
-                    //LogObj("enemyNameText", self.enemyNameText);
-                    //LogList("battleStateText", self.battleStateText);
-                    //LogList("battleValue", self.battleValue);
-                    //LogList("actorQuqu", self.actorQuqu);
-                    //LogList("enemyQuqu", self.enemyQuqu);
-                    //LogObj("startBattleWindow", self.startBattleWindow);
-                    //LogObj("startBattleButton", self.startBattleButton);
-                    //LogObj("loseBattleButton", self.loseBattleButton);
-                    //LogList("uiText", self.uiText);
-                    //LogObj("actorBodyImage", self.actorBodyImage);
-                    //LogObj("actorBodyNameText", self.actorBodyNameText);
-                    //LogObj("enemyBodyImage", self.enemyBodyImage);
-                    //LogObj("enemyBodyNameText", self.enemyBodyNameText);
-                    //LogObj("resourceButtonImage", self.resourceButtonImage);
-                    //LogList("hideQuquImage", self.hideQuquImage);
-                    //LogList("actorQuquHpText", self.actorQuquHpText);
-                    //LogList("enemyQuquHpText", self.enemyQuquHpText);
-                    //LogList("actorQuquIcon", self.actorQuquIcon);
-                    //LogList("enemyQuquIcon", self.enemyQuquIcon);
-                    //LogList("actorBattleQuquNameText", self.actorBattleQuquNameText);
-                    //LogList("actorBattleQuquPower1Text", self.actorBattleQuquPower1Text);
-                    //LogList("actorBattleQuquPower2Text", self.actorBattleQuquPower2Text);
-                    //LogList("actorBattleQuquPower3Text", self.actorBattleQuquPower3Text);
-                    //LogList("actorBattleQuquStrengthText", self.actorBattleQuquStrengthText);
-                    //LogList("actorBattleQuquMagicText", self.actorBattleQuquMagicText);
-                    //LogList("actorBattleQuquStrengthBar", self.actorBattleQuquStrengthBar);
-                    //LogList("actorBattleQuquMagicBar", self.actorBattleQuquMagicBar);
-                    //LogList("enemyBattleQuquNameText", self.enemyBattleQuquNameText);
-                    //LogList("enemyBattleQuquPower1Text", self.enemyBattleQuquPower1Text);
-                    //LogList("enemyBattleQuquPower2Text", self.enemyBattleQuquPower2Text);
-                    //LogList("enemyBattleQuquPower3Text", self.enemyBattleQuquPower3Text);
-                    //LogList("enemyBattleQuquStrengthText", self.enemyBattleQuquStrengthText);
-                    //LogList("enemyBattleQuquMagicText", self.enemyBattleQuquMagicText);
-                    //LogList("enemyBattleQuquStrengthBar", self.enemyBattleQuquStrengthBar);
-                    //LogList("enemyBattleQuquMagicBar", self.enemyBattleQuquMagicBar);
-                    //LogList("actorQuquName", self.actorQuquName);
-                    //LogList("enemyQuquName", self.enemyQuquName);
-                    //LogObj("chooseBodyWindow", self.chooseBodyWindow);
-                    //LogObj("needResourceText", self.needResourceText);
-                    //LogObj("useResourceButton", self.useResourceButton);
-                    //LogObj("acotrWindow", self.acotrWindow);
-                    //LogObj("useActorButton", self.useActorButton);
-                    //LogObj("actorHolder", self.actorHolder);
-                    //LogObj("actorIcon", self.actorIcon);
-                    //LogObj("itemWindow", self.itemWindow);
-                    //LogObj("useItemButton", self.useItemButton);
-                    //LogObj("itemMask", self.itemMask);
-                    //LogObj("itemHolder", self.itemHolder);
-                    //LogList("nextButton", self.nextButton);
-                    //LogList("nextButtonMask", self.nextButtonMask);
-                    //LogList("actorQuquDamageText", self.actorQuquDamageText);
-                    //LogList("enemyQuquDamageText", self.enemyQuquDamageText);
-                    //LogObj("battleEndWindow", self.battleEndWindow);
-                    //LogObj("closeBattleButton", self.closeBattleButton);
-                    //LogObj("battleEndTypImage", self.battleEndTypImage);
-                    //LogObj("battleEndBodyName", self.battleEndBodyName);
-                    //LogObj("battleEndBodyText", self.battleEndBodyText);
-                    //LogList("actorQuquCall", self.actorQuquCall);
-                    //LogList("enemyQuquCall", self.enemyQuquCall);
+                    LogObj("setBattleSpeedHolder", self.setBattleSpeedHolder);
+                    LogList("setBattleSpeedToggle", self.setBattleSpeedToggle);
+                    LogObj("ququBattleWindow", self.ququBattleWindow);
+                    LogObj("actorBack", self.actorBack);
+                    LogObj("enemyBack", self.enemyBack);
+                    LogObj("chooseActorButton", self.chooseActorButton);
+                    LogList("ququBattleBack", self.ququBattleBack);
+                    LogObj("actorFace", self.actorFace);
+                    LogObj("enemyFace", self.enemyFace);
+                    LogObj("actorNameText", self.actorNameText);
+                    LogObj("enemyNameText", self.enemyNameText);
+                    LogList("battleStateText", self.battleStateText);
+                    LogList("battleValue", self.battleValue);
+                    LogList("actorQuqu", self.actorQuqu);
+                    LogList("enemyQuqu", self.enemyQuqu);
+                    LogObj("startBattleWindow", self.startBattleWindow);
+                    LogObj("startBattleButton", self.startBattleButton);
+                    LogObj("loseBattleButton", self.loseBattleButton);
+                    LogList("uiText", self.uiText);
+                    LogObj("actorBodyImage", self.actorBodyImage);
+                    LogObj("actorBodyNameText", self.actorBodyNameText);
+                    LogObj("enemyBodyImage", self.enemyBodyImage);
+                    LogObj("enemyBodyNameText", self.enemyBodyNameText);
+                    LogObj("resourceButtonImage", self.resourceButtonImage);
+                    LogList("hideQuquImage", self.hideQuquImage);
+                    LogList("actorQuquHpText", self.actorQuquHpText);
+                    LogList("enemyQuquHpText", self.enemyQuquHpText);
+                    LogList("actorQuquIcon", self.actorQuquIcon);
+                    LogList("enemyQuquIcon", self.enemyQuquIcon);
+                    LogList("actorBattleQuquNameText", self.actorBattleQuquNameText);
+                    LogList("actorBattleQuquPower1Text", self.actorBattleQuquPower1Text);
+                    LogList("actorBattleQuquPower2Text", self.actorBattleQuquPower2Text);
+                    LogList("actorBattleQuquPower3Text", self.actorBattleQuquPower3Text);
+                    LogList("actorBattleQuquStrengthText", self.actorBattleQuquStrengthText);
+                    LogList("actorBattleQuquMagicText", self.actorBattleQuquMagicText);
+                    LogList("actorBattleQuquStrengthBar", self.actorBattleQuquStrengthBar);
+                    LogList("actorBattleQuquMagicBar", self.actorBattleQuquMagicBar);
+                    LogList("enemyBattleQuquNameText", self.enemyBattleQuquNameText);
+                    LogList("enemyBattleQuquPower1Text", self.enemyBattleQuquPower1Text);
+                    LogList("enemyBattleQuquPower2Text", self.enemyBattleQuquPower2Text);
+                    LogList("enemyBattleQuquPower3Text", self.enemyBattleQuquPower3Text);
+                    LogList("enemyBattleQuquStrengthText", self.enemyBattleQuquStrengthText);
+                    LogList("enemyBattleQuquMagicText", self.enemyBattleQuquMagicText);
+                    LogList("enemyBattleQuquStrengthBar", self.enemyBattleQuquStrengthBar);
+                    LogList("enemyBattleQuquMagicBar", self.enemyBattleQuquMagicBar);
+                    LogList("actorQuquName", self.actorQuquName);
+                    LogList("enemyQuquName", self.enemyQuquName);
+                    LogObj("chooseBodyWindow", self.chooseBodyWindow);
+                    LogObj("needResourceText", self.needResourceText);
+                    LogObj("useResourceButton", self.useResourceButton);
+                    LogObj("acotrWindow", self.acotrWindow);
+                    LogObj("useActorButton", self.useActorButton);
+                    LogObj("actorHolder", self.actorHolder);
+                    LogObj("actorIcon", self.actorIcon);
+                    LogObj("itemWindow", self.itemWindow);
+                    LogObj("useItemButton", self.useItemButton);
+                    LogObj("itemMask", self.itemMask);
+                    LogObj("itemHolder", self.itemHolder);
+                    LogList("nextButton", self.nextButton);
+                    LogList("nextButtonMask", self.nextButtonMask);
+                    LogList("actorQuquDamageText", self.actorQuquDamageText);
+                    LogList("enemyQuquDamageText", self.enemyQuquDamageText);
+                    LogObj("battleEndWindow", self.battleEndWindow);
+                    LogObj("closeBattleButton", self.closeBattleButton);
+                    LogObj("battleEndTypImage", self.battleEndTypImage);
+                    LogObj("battleEndBodyName", self.battleEndBodyName);
+                    LogObj("battleEndBodyText", self.battleEndBodyText);
+                    LogList("actorQuquCall", self.actorQuquCall);
+                    LogList("enemyQuquCall", self.enemyQuquCall);
 
                     obj = GameObject.Instantiate(QuquBattleSystem.instance.gameObject);
                     QuquBattleSystem tmp = obj.GetComponent<QuquBattleSystem>();
@@ -213,7 +220,7 @@ namespace GuiTest
                     Log(obj.ToString());
                     obj.SetActive(true);
                     Log(GuiQuquBattleSystem.instance.ToString());
-                    obj.SetActive(false);
+                    //obj.SetActive(false);
 
 
                     //Random.InitSeed(111);

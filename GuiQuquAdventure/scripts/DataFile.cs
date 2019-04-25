@@ -53,45 +53,45 @@ namespace GuiQuquAdventure // 聊天室
                 {
                     //try
                     //{
-                        Main.Logger.Log(getData.downloadHandler.text);
-                        string[] data = getData.downloadHandler.text.Split('|');
-                        int pos = 0;
-                        long time_stamp = long.Parse(data[pos++]); // 第一个数据是时间戳
-                        Main.Logger.Log("/ 第一个数据是时间戳");
-                        PlayerData.self.ip = data[pos++];
-                        int errId = int.Parse(data[pos++]); // 错误码
-                        Main.Logger.Log("/ 错误码");
-                        if(errId > -1)
-                        {
-                            string err = err_list[errId];
-                            fun(err, time_stamp, null);
-                        }
-                        else
-                        {
-                            int count = int.Parse(data[pos++]); // 第二个数据是房间个数
-                            Main.Logger.Log("/ 第二个数据是房间个数");
+                    // Main.Logger.Log(getData.downloadHandler.text);
+                    string[] data = getData.downloadHandler.text.Split('|');
+                    int pos = 0;
+                    long time_stamp = long.Parse(data[pos++]); // 第一个数据是时间戳
+                                                               // Main.Logger.Log("/ 第一个数据是时间戳");
+                    PlayerData.self.ip = data[pos++];
+                    int errId = int.Parse(data[pos++]); // 错误码
+                                                        // Main.Logger.Log("/ 错误码");
+                    if (errId > -1)
+                    {
+                        string err = err_list[errId];
+                        fun(err, time_stamp, null);
+                    }
+                    else
+                    {
+                        int count = int.Parse(data[pos++]); // 第二个数据是房间个数
+                                                            // Main.Logger.Log("/ 第二个数据是房间个数");
 
-                            // 保存数据到本地
-                            if (null == hall_data.room_data || hall_data.room_data.Length != count)
-                            {
-                                hall_data.room_data = new RoomData[count];
-                            }
-                            for (int i = 0; i < count; i++) // 循环获取每个房间的等级和人数
-                            {
-                                RoomData room_data = hall_data.room_data[i];
-                                if (null == room_data)
-                                {
-                                    room_data = new RoomData();
-                                    hall_data.room_data[i] = room_data;
-                                }
-                                room_data.level = int.Parse(data[pos++]); // 房间等级
-                                Main.Logger.Log("/ 房间等级");
-                                room_data.people_num = int.Parse(data[pos++]); // 房间人数
-                                Main.Logger.Log("/ 房间人数");
-                            }
-
-                            fun(null, time_stamp, hall_data.room_data);
+                        // 保存数据到本地
+                        if (null == hall_data.room_data || hall_data.room_data.Length != count)
+                        {
+                            hall_data.room_data = new RoomData[count];
                         }
+                        for (int i = 0; i < count; i++) // 循环获取每个房间的等级和人数
+                        {
+                            RoomData room_data = hall_data.room_data[i];
+                            if (null == room_data)
+                            {
+                                room_data = new RoomData();
+                                hall_data.room_data[i] = room_data;
+                            }
+                            room_data.level = int.Parse(data[pos++]); // 房间等级
+                                                                      // Main.Logger.Log("/ 房间等级");
+                            room_data.people_num = int.Parse(data[pos++]); // 房间人数
+                                                                           // Main.Logger.Log("/ 房间人数");
+                        }
+
+                        fun(null, time_stamp, hall_data.room_data);
+                    }
                     //}
                     //catch (Exception e)
                     //{
@@ -105,7 +105,7 @@ namespace GuiQuquAdventure // 聊天室
         }
 
         // 进入房间 请求服务器房间数据 10002
-        public void GetRoomData(Action<string, long, RoomData> fun, string name, int room_idx, long last_chat_time_stamp, string image, string chat_content = null, string chat_param=null)
+        public void GetRoomData(Action<string, long, RoomData> fun, string name, int room_idx, long last_chat_time_stamp, string image, string chat_content = null, string chat_param = null)
         {
             StartCoroutine(HttpGetRoomData(fun, name, room_idx, last_chat_time_stamp, image, chat_content, chat_param));
         }
@@ -118,7 +118,7 @@ namespace GuiQuquAdventure // 聊天室
             form.AddField("name", name);
             form.AddField("lcts", last_chat_time_stamp.ToString());
             form.AddField("image", image);
-            if (null != chat_content&&null!= chat_param)
+            if (null != chat_content && null != chat_param)
             {
                 form.AddField("chat_content", chat_content);
                 form.AddField("chat_param", chat_param);
@@ -135,139 +135,139 @@ namespace GuiQuquAdventure // 聊天室
                 {
                     //try
                     //{
-                        Main.Logger.Log(getData.downloadHandler.text);
-                        string[] data = getData.downloadHandler.text.Split('|');
-                        int pos = 0;
-                        long time_stamp = long.Parse(data[pos++]); // 时间戳
-                        Main.Logger.Log("/ 时间戳");
-                        PlayerData.self.ip = data[pos++];
-                        int errId = int.Parse(data[pos++]); // 错误码
-                        Main.Logger.Log("/ 错误码");
-                        if (errId > -1)
-                        {
-                            string err = err_list[errId];
-                            fun(err, time_stamp, null);
-                        }
-                        else
-                        {
-                            int idx = int.Parse(data[pos++]); // 房间索引
-                            Main.Logger.Log("/ 房间索引");
-                            int count = int.Parse(data[pos++]); // 房间个数
-                            Main.Logger.Log("/ 房间个数");
+                    // Main.Logger.Log(getData.downloadHandler.text);
+                    string[] data = getData.downloadHandler.text.Split('|');
+                    int pos = 0;
+                    long time_stamp = long.Parse(data[pos++]); // 时间戳
+                                                               // Main.Logger.Log("/ 时间戳");
+                    PlayerData.self.ip = data[pos++];
+                    int errId = int.Parse(data[pos++]); // 错误码
+                                                        // Main.Logger.Log("/ 错误码");
+                    if (errId > -1)
+                    {
+                        string err = err_list[errId];
+                        fun(err, time_stamp, null);
+                    }
+                    else
+                    {
+                        int idx = int.Parse(data[pos++]); // 房间索引
+                                                          // Main.Logger.Log("/ 房间索引");
+                        int count = int.Parse(data[pos++]); // 房间个数
+                                                            // Main.Logger.Log("/ 房间个数");
 
-                            // 保存数据到本地
-                            if (null == hall_data.room_data || hall_data.room_data.Length != count)
-                            {
-                                hall_data.room_data = new RoomData[count];
-                            }
-                            RoomData room_data = hall_data.room_data[idx];
-                            if (null == room_data)
-                            {
-                                room_data = new RoomData();
-                                hall_data.room_data[idx] = room_data;
-                            }
-                            room_data.level = int.Parse(data[pos++]); // 房间等级
-                            Main.Logger.Log("/ 房间等级");
-                            room_data.people_num = int.Parse(data[pos++]); // 房间人数
-                            Main.Logger.Log("/ 房间人数");
-                            int desk_count = int.Parse(data[pos++]); // 房间的桌子数量
-                            Main.Logger.Log("/ 房间的桌子数量");
-                            if (null == room_data.desk_mark || room_data.desk_mark.Length != desk_count)
-                            {
-                                room_data.desk_mark = new int[desk_count];
-                            }
-                            if (null == room_data.desk_data || room_data.desk_data.Length != desk_count)
-                            {
-                                room_data.desk_data = new DeskData[desk_count];
-                            }
-                            for (int i = 0; i < desk_count; i++)
-                            {
-                                int mark = int.Parse(data[pos++]); // 每个桌子人数标识 1和2表示是否有对战者 4 8 16 32 64 128 256 516 1024 2048 分别表示是否存在的最多10个观战  4096 表示房间类型
-                                Main.Logger.Log("/ 每个桌子人数标识 1和2表示是否有对战者 4 8 16 32 64 128 256 516 1024 2048 分别表示是否存在的最多10个观战  4096 表示房间类型");
-                                room_data.desk_mark[i] = mark;
-                                DeskData desk_data = room_data.desk_data[i];
-                                if (null == desk_data)
-                                {
-                                    desk_data = new DeskData();
-                                    room_data.desk_data[i] = desk_data;
-                                }
-                                desk_data.idx = i;
-                                desk_data.typ = mark & (1 << 12);
-                                int people_num = 0;
-                                for (int j = 0; j < 12; j++)
-                                {
-                                    if (1 == (mark & (1 << j)))
-                                    {
-                                        people_num++;
-                                    }
-                                }
-                                desk_data.people_num = people_num;
-                            }
-                            int player_count = room_data.people_num;
-                            if (null == room_data.player_data || room_data.player_data.Length != player_count)
-                            {
-                                room_data.player_data = new PlayerData[player_count];
-                            }
-                            for (int i = 0; i < player_count; i++)
-                            {
-                                PlayerData player_data = room_data.player_data[i];
-                                if (null == player_data)
-                                {
-                                    player_data = new PlayerData();
-                                    room_data.player_data[i] = player_data;
-                                }
-                                player_data.name = data[pos++]; // 玩家名字
-                                Main.Logger.Log("/ 玩家名字");
-                                player_data.ip = data[pos++]; // ip地址
-                                Main.Logger.Log("/ ip地址");
-                                player_data.level = idx;
-                                player_data.desk_idx = int.Parse(data[pos++]); // 所在桌子
-                                Main.Logger.Log("/ 所在桌子");
-                                player_data.SetImage(data[pos++]); // 设置形象
-                                Main.Logger.Log("/ 设置形象");
-                            }
-                            int chat_count = int.Parse(data[pos++]); // 聊天记录数量
-                            Main.Logger.Log("/ 聊天记录数量");
-                            ChatData[] chatDatas = room_data.chat_data;
-                            Dictionary<long, ChatData> chatMap = new Dictionary<long, ChatData>();
-                            if (null != chatDatas)
-                            {
-                                foreach (var item in chatDatas)
-                                {
-                                    chatMap.Add(item.time_stamp, item);
-                                }
-                            }
-                            bool add = false;
-                            for (int i = 0; i < chat_count; i++)
-                            {
-                                long ts = long.Parse(data[pos++]); // 发言时间
-                                Main.Logger.Log("/ 发言时间");
-                                string n = data[pos++]; // 发言者名字
-                                Main.Logger.Log("/ 发言者名字");
-                                string p = data[pos++]; // 发言者ip
-                                Main.Logger.Log("/ 发言者ip");
-                                string content = data[pos++]; // 发言内容
-                                Main.Logger.Log("/ 发言内容");
-                                string param = data[pos++]; // 发言参数
-                                Main.Logger.Log("/ 发言参数");
-                                if (!chatMap.ContainsKey(ts))
-                                {
-                                    add = true;
-                                    chatMap.Add(ts, new ChatData() { time_stamp = ts, name = n, ip = p, content = content, param = param });
-                                }
-                            }
-                            if (add)
-                            {
-                                List<ChatData> list = new List<ChatData>(chatMap.Keys.Count);
-                                foreach (var item in chatMap)
-                                {
-                                    list.Add(item.Value);
-                                }
-                                list.Sort();
-                                room_data.chat_data = list.ToArray();
-                            }
-                            fun(null, time_stamp, room_data);
+                        // 保存数据到本地
+                        if (null == hall_data.room_data || hall_data.room_data.Length != count)
+                        {
+                            hall_data.room_data = new RoomData[count];
                         }
+                        RoomData room_data = hall_data.room_data[idx];
+                        if (null == room_data)
+                        {
+                            room_data = new RoomData();
+                            hall_data.room_data[idx] = room_data;
+                        }
+                        room_data.level = int.Parse(data[pos++]); // 房间等级
+                                                                  // Main.Logger.Log("/ 房间等级");
+                        room_data.people_num = int.Parse(data[pos++]); // 房间人数
+                                                                       // Main.Logger.Log("/ 房间人数");
+                        int desk_count = int.Parse(data[pos++]); // 房间的桌子数量
+                                                                 // Main.Logger.Log("/ 房间的桌子数量");
+                        if (null == room_data.desk_mark || room_data.desk_mark.Length != desk_count)
+                        {
+                            room_data.desk_mark = new int[desk_count];
+                        }
+                        if (null == room_data.desk_data || room_data.desk_data.Length != desk_count)
+                        {
+                            room_data.desk_data = new DeskData[desk_count];
+                        }
+                        for (int i = 0; i < desk_count; i++)
+                        {
+                            int mark = int.Parse(data[pos++]); // 每个桌子人数标识 1和2表示是否有对战者 4 8 16 32 64 128 256 516 1024 2048 分别表示是否存在的最多10个观战  4096 表示房间类型
+                                                               // Main.Logger.Log("/ 每个桌子人数标识 1和2表示是否有对战者 4 8 16 32 64 128 256 516 1024 2048 分别表示是否存在的最多10个观战  4096 表示房间类型");
+                            room_data.desk_mark[i] = mark;
+                            DeskData desk_data = room_data.desk_data[i];
+                            if (null == desk_data)
+                            {
+                                desk_data = new DeskData();
+                                room_data.desk_data[i] = desk_data;
+                            }
+                            desk_data.idx = i;
+                            desk_data.typ = mark & (1 << 12);
+                            int people_num = 0;
+                            for (int j = 0; j < 12; j++)
+                            {
+                                if (1 == (mark & (1 << j)))
+                                {
+                                    people_num++;
+                                }
+                            }
+                            desk_data.people_num = people_num;
+                        }
+                        int player_count = room_data.people_num;
+                        if (null == room_data.player_data || room_data.player_data.Length != player_count)
+                        {
+                            room_data.player_data = new PlayerData[player_count];
+                        }
+                        for (int i = 0; i < player_count; i++)
+                        {
+                            PlayerData player_data = room_data.player_data[i];
+                            if (null == player_data)
+                            {
+                                player_data = new PlayerData();
+                                room_data.player_data[i] = player_data;
+                            }
+                            player_data.name = data[pos++]; // 玩家名字
+                                                            // Main.Logger.Log("/ 玩家名字");
+                            player_data.ip = data[pos++]; // ip地址
+                                                          // Main.Logger.Log("/ ip地址");
+                            player_data.level = idx;
+                            player_data.desk_idx = int.Parse(data[pos++]); // 所在桌子
+                                                                           // Main.Logger.Log("/ 所在桌子");
+                            player_data.SetImage(data[pos++]); // 设置形象
+                                                               // Main.Logger.Log("/ 设置形象");
+                        }
+                        int chat_count = int.Parse(data[pos++]); // 聊天记录数量
+                                                                 // Main.Logger.Log("/ 聊天记录数量");
+                        ChatData[] chatDatas = room_data.chat_data;
+                        Dictionary<long, ChatData> chatMap = new Dictionary<long, ChatData>();
+                        if (null != chatDatas)
+                        {
+                            foreach (var item in chatDatas)
+                            {
+                                chatMap.Add(item.time_stamp, item);
+                            }
+                        }
+                        bool add = false;
+                        for (int i = 0; i < chat_count; i++)
+                        {
+                            long ts = long.Parse(data[pos++]); // 发言时间
+                                                               // Main.Logger.Log("/ 发言时间");
+                            string n = data[pos++]; // 发言者名字
+                                                    // Main.Logger.Log("/ 发言者名字");
+                            string p = data[pos++]; // 发言者ip
+                                                    // Main.Logger.Log("/ 发言者ip");
+                            string content = data[pos++]; // 发言内容
+                                                          // Main.Logger.Log("/ 发言内容");
+                            string param = data[pos++]; // 发言参数
+                                                        // Main.Logger.Log("/ 发言参数");
+                            if (!chatMap.ContainsKey(ts))
+                            {
+                                add = true;
+                                chatMap.Add(ts, new ChatData() { time_stamp = ts, name = n, ip = p, content = content, param = param });
+                            }
+                        }
+                        if (add)
+                        {
+                            List<ChatData> list = new List<ChatData>(chatMap.Keys.Count);
+                            foreach (var item in chatMap)
+                            {
+                                list.Add(item.Value);
+                            }
+                            list.Sort();
+                            room_data.chat_data = list.ToArray();
+                        }
+                        fun(null, time_stamp, room_data);
+                    }
                     //}
                     //catch (Exception e)
                     //{
@@ -294,9 +294,9 @@ namespace GuiQuquAdventure // 聊天室
         /// <param name="last_chat_time_stamp">当前聊天数据的最后一次发言时间</param>
         /// <param name="last_battle_time_stamp">当前战斗数据的最后一次战斗时间</param>
         /// <param name="bet">押注物品id</param>
-        public void GetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, int bet, int[] ququ, string image, string chat_content = null,string chat_param = null)
+        public void GetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, int bet, int[] ququ, string image, string chat_content = null, string chat_param = null)
         {
-            StartCoroutine(HttpGetDeskData(fun, name, room_idx, desk_idx, ready, observer, last_chat_time_stamp, last_battle_time_stamp, bet,ququ, image, chat_content, chat_param));
+            StartCoroutine(HttpGetDeskData(fun, name, room_idx, desk_idx, ready, observer, last_chat_time_stamp, last_battle_time_stamp, bet, ququ, image, chat_content, chat_param));
         }
 
         IEnumerator HttpGetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, int bet, int[] ququ, string image, string chat_content, string chat_param)
@@ -331,209 +331,209 @@ namespace GuiQuquAdventure // 聊天室
                 {
                     //try
                     //{
-                        Main.Logger.Log(getData.downloadHandler.text);
-                        string[] data = getData.downloadHandler.text.Split('|');
-                        int pos = 0;
-                    Main.Logger.Log("/ 哈哈 "+ data[pos]);
-                    Main.Logger.Log(" !! "+long.Parse(data[pos]));
+                    // Main.Logger.Log(getData.downloadHandler.text);
+                    string[] data = getData.downloadHandler.text.Split('|');
+                    int pos = 0;
+                    // Main.Logger.Log("/ 哈哈 "+ data[pos]);
+                    // Main.Logger.Log(" !! "+long.Parse(data[pos]));
                     long time_stamp = long.Parse(data[pos++]); // 时间戳
-                        Main.Logger.Log("/ 时间戳");
-                        PlayerData.self.ip = data[pos++];
-                        int errId = int.Parse(data[pos++]); // 错误码
-                        Main.Logger.Log("/ 错误码");
-                        if (errId > -1)
+                                                               // Main.Logger.Log("/ 时间戳");
+                    PlayerData.self.ip = data[pos++];
+                    int errId = int.Parse(data[pos++]); // 错误码
+                                                        // Main.Logger.Log("/ 错误码");
+                    if (errId > -1)
+                    {
+                        string err = err_list[errId];
+                        fun(err, time_stamp, null, 0);
+                    }
+                    else
+                    {
+                        int idx = int.Parse(data[pos++]); // 房间索引
+                                                          // Main.Logger.Log("/ 房间索引");
+                        int count = int.Parse(data[pos++]); //房间个数
+                                                            // Main.Logger.Log("/ 房间个数");
+
+                        // 保存数据到本地
+                        if (null == hall_data.room_data || hall_data.room_data.Length != count)
                         {
-                            string err = err_list[errId];
-                            fun(err, time_stamp, null,0);
+                            hall_data.room_data = new RoomData[count];
                         }
-                        else
+                        RoomData room_data = hall_data.room_data[idx];
+                        if (null == room_data)
                         {
-                            int idx = int.Parse(data[pos++]); // 房间索引
-                            Main.Logger.Log("/ 房间索引");
-                            int count = int.Parse(data[pos++]); //房间个数
-                            Main.Logger.Log("/房间个数");
-
-                            // 保存数据到本地
-                            if (null == hall_data.room_data || hall_data.room_data.Length != count)
-                            {
-                                hall_data.room_data = new RoomData[count];
-                            }
-                            RoomData room_data = hall_data.room_data[idx];
-                            if (null == room_data)
-                            {
-                                room_data = new RoomData();
-                                hall_data.room_data[idx] = room_data;
-                            }
-                            int idx2 = int.Parse(data[pos++])%100; // 桌子索引
-                            Main.Logger.Log("/ 桌子索引");
-                            int count2 = int.Parse(data[pos++]); // 桌子数量
-                            Main.Logger.Log("/ 桌子数量");
-                            if (null == room_data.desk_data || room_data.desk_data.Length != count2)
-                            {
-                                room_data.desk_data = new DeskData[count2];
-                            }
-                            DeskData desk_data = room_data.desk_data[idx2];
-                            if (null == desk_data)
-                            {
-                                desk_data = new DeskData();
-                                desk_data.idx = idx2;
-                                room_data.desk_data[idx2] = desk_data;
-                            }
-                            int typ = int.Parse(data[pos++]); // 桌子类型
-                            Main.Logger.Log("/ 桌子类型");
-                            desk_data.typ = typ;
-
-                            int player_count = int.Parse(data[pos++]); // 玩家数量
-                            Main.Logger.Log("/ 玩家数量");
-                            if (null == desk_data.player_data || desk_data.player_data.Length == player_count)
-                            {
-                                desk_data.player_data = new PlayerData[player_count];
-                            }
-                            for (int i = 0; i < player_count; i++)
-                            {
-                                PlayerData player_data = desk_data.player_data[i];
-                                if (null == player_data)
-                                {
-                                    player_data = new PlayerData();
-                                    desk_data.player_data[i] = player_data;
-                                }
-                                player_data.name = data[pos++]; // 玩家名字
-                                Main.Logger.Log("/ 玩家名字");
-                                player_data.ip = data[pos++]; // ip地址
-                                Main.Logger.Log("/ ip地址");
-                                player_data.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押0号注游客 3押1号注游客
-                                Main.Logger.Log("/ 0非游客 1普通游客 2押0号注游客 3押1号注游客");
-                                player_data.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
-                                Main.Logger.Log("/[3] 出战蛐蛐");
-                                player_data.time_stamp = long.Parse(data[pos++]); // 心跳时间
-                                Main.Logger.Log("/ 心跳时间");
-                                player_data.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
-                                Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
-                                player_data.level = idx;
-                                player_data.desk_idx = idx2;
-                                player_data.bet = int.Parse(data[pos++]); // 赌注
-                                Main.Logger.Log("/ 赌注");
-                                player_data.SetImage(data[pos++]); // 设置玩家形象
-                                Main.Logger.Log("/ 设置玩家形象");
-                            }
-
-                            int battle_count = int.Parse(data[pos++]); // 战斗数量
-                            Main.Logger.Log("/ 战斗数量");
-                            BattleData[] battle_datas = desk_data.battle_data;
-                            Dictionary<long, BattleData> battle_map = new Dictionary<long, BattleData>();
-                            foreach (var item in battle_datas)
-                            {
-                                if (!battle_map.ContainsKey(item.time_stamp))
-                                {
-                                    battle_map.Add(item.time_stamp, item);
-                                }
-                            }
-                            bool add1 = false;
-                            for (int i = 0; i < battle_count; i++)
-                            {
-                                long battle_time_stamp = long.Parse(data[pos++]); // 战斗时间
-                                Main.Logger.Log("/ 战斗时间");
-                                PlayerData player_data1 = new PlayerData();
-                                player_data1.name = data[pos++]; // 玩家名字
-                                Main.Logger.Log("/ 玩家名字");
-                                player_data1.ip = data[pos++]; // ip地址
-                                Main.Logger.Log("/ ip地址");
-                                player_data1.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
-                                Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
-                                player_data1.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
-                                Main.Logger.Log("/[3] 出战蛐蛐");
-                                player_data1.time_stamp = long.Parse(data[pos++]); // 心跳时间
-                                Main.Logger.Log("/ 心跳时间");
-                                player_data1.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
-                                Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
-                                player_data1.level = idx;
-                                player_data1.desk_idx = idx2;
-                                player_data1.bet = int.Parse(data[pos++]); // 赌注
-                                Main.Logger.Log("/ 赌注");
-                                player_data1.SetImage(data[pos++]); // 形象
-                                Main.Logger.Log("/ 形象");
-                                PlayerData player_data2 = new PlayerData();
-                                player_data2.name = data[pos++]; // 玩家名字
-                                Main.Logger.Log("/ 玩家名字");
-                                player_data2.ip = data[pos++]; // ip地址
-                                Main.Logger.Log("/ ip地址");
-                                player_data2.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
-                                Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
-                                player_data2.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
-                                Main.Logger.Log("/[3] 出战蛐蛐");
-                                player_data2.time_stamp = long.Parse(data[pos++]); // 心跳时间
-                                Main.Logger.Log("/ 心跳时间");
-                                player_data2.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
-                                Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
-                                player_data2.level = idx;
-                                player_data2.desk_idx = idx2;
-                                player_data2.bet = int.Parse(data[pos++]); // 赌注
-                                Main.Logger.Log("/ 赌注");
-                                player_data2.SetImage(data[pos++]); // 形象
-                                Main.Logger.Log("/ 形象");
-                                if (!battle_map.ContainsKey(battle_time_stamp))
-                                {
-                                    add1 = true;
-                                    BattleData battle_data = new BattleData() { time_stamp = battle_time_stamp, player_data = new PlayerData[2] { player_data1, player_data2 } };
-                                    battle_map.Add(battle_time_stamp, battle_data);
-                                }
-                            }
-                            if (add1)
-                            {
-                                List<BattleData> list = new List<BattleData>(battle_map.Count);
-                                foreach (var item in battle_map)
-                                {
-                                    list.Add(item.Value);
-                                }
-                                list.Sort();
-                                desk_data.battle_data = list.ToArray();
-                            }
-                            int chat_count = int.Parse(data[pos++]); // 聊天数量
-                            Main.Logger.Log("/ 聊天数量");
-                            ChatData[] chat_datas = desk_data.chat_data;
-                            Dictionary<long, ChatData> chat_map = new Dictionary<long, ChatData>();
-                            foreach (var item in chat_datas)
-                            {
-                                if (!chat_map.ContainsKey(item.time_stamp))
-                                {
-                                    chat_map.Add(item.time_stamp, item);
-                                }
-                            }
-                            bool add2 = false;
-                            for (int i = 0; i < chat_count; i++)
-                            {
-                                long ts = long.Parse(data[pos++]); // 发言时间
-                                Main.Logger.Log("/ 发言时间");
-                                string n = data[pos++]; // 发言者名字
-                                Main.Logger.Log("/ 发言者名字");
-                                string p = data[pos++]; // 发言者ip
-                                Main.Logger.Log("/ 发言者ip");
-                                string content = data[pos++]; // 发言内容
-                                Main.Logger.Log("/ 发言内容");
-                                string param = data[pos++]; // 发言参数
-                                Main.Logger.Log("/ 发言参数");
-                                if (!chat_map.ContainsKey(ts))
-                                {
-                                    add2 = true;
-                                    chat_map.Add(ts, new ChatData() { time_stamp = ts, name = n, ip = p, content = content, param = param });
-                                }
-                            }
-                            if (add2)
-                            {
-                                List<ChatData> list = new List<ChatData>(chat_map.Count);
-                                foreach (var item in chat_map)
-                                {
-                                    list.Add(item.Value);
-                                }
-                                list.Sort();
-                                desk_data.chat_data = list.ToArray();
-                            }
-
-                            int battle = int.Parse(data[pos++]); // 触发战斗
-                            Main.Logger.Log("/ 触发战斗");
-
-                            fun(null, time_stamp, desk_data, battle);
+                            room_data = new RoomData();
+                            hall_data.room_data[idx] = room_data;
                         }
+                        int idx2 = int.Parse(data[pos++]) % 100; // 桌子索引
+                                                                 // Main.Logger.Log("/ 桌子索引");
+                        int count2 = int.Parse(data[pos++]); // 桌子数量
+                                                             // Main.Logger.Log("/ 桌子数量");
+                        if (null == room_data.desk_data || room_data.desk_data.Length != count2)
+                        {
+                            room_data.desk_data = new DeskData[count2];
+                        }
+                        DeskData desk_data = room_data.desk_data[idx2];
+                        if (null == desk_data)
+                        {
+                            desk_data = new DeskData();
+                            desk_data.idx = idx2;
+                            room_data.desk_data[idx2] = desk_data;
+                        }
+                        int typ = int.Parse(data[pos++]); // 桌子类型
+                                                          // Main.Logger.Log("/ 桌子类型");
+                        desk_data.typ = typ;
+
+                        int player_count = int.Parse(data[pos++]); // 玩家数量
+                                                                   // Main.Logger.Log("/ 玩家数量");
+                        if (null == desk_data.player_data || desk_data.player_data.Length == player_count)
+                        {
+                            desk_data.player_data = new PlayerData[player_count];
+                        }
+                        for (int i = 0; i < player_count; i++)
+                        {
+                            PlayerData player_data = desk_data.player_data[i];
+                            if (null == player_data)
+                            {
+                                player_data = new PlayerData();
+                                desk_data.player_data[i] = player_data;
+                            }
+                            player_data.name = data[pos++]; // 玩家名字
+                                                            // Main.Logger.Log("/ 玩家名字");
+                            player_data.ip = data[pos++]; // ip地址
+                                                          // Main.Logger.Log("/ ip地址");
+                            player_data.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押0号注游客 3押1号注游客
+                                                                           // Main.Logger.Log("/ 0非游客 1普通游客 2押0号注游客 3押1号注游客");
+                            player_data.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
+                                                                                                                                     // Main.Logger.Log("/[3] 出战蛐蛐");
+                            player_data.time_stamp = long.Parse(data[pos++]); // 心跳时间
+                                                                              // Main.Logger.Log("/ 心跳时间");
+                            player_data.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
+                                                                        // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
+                            player_data.level = idx;
+                            player_data.desk_idx = idx2;
+                            player_data.bet = int.Parse(data[pos++]); // 赌注
+                                                                      // Main.Logger.Log("/ 赌注");
+                            player_data.SetImage(data[pos++]); // 设置玩家形象
+                                                               // Main.Logger.Log("/ 设置玩家形象");
+                        }
+
+                        int battle_count = int.Parse(data[pos++]); // 战斗数量
+                                                                   // Main.Logger.Log("/ 战斗数量");
+                        BattleData[] battle_datas = desk_data.battle_data;
+                        Dictionary<long, BattleData> battle_map = new Dictionary<long, BattleData>();
+                        foreach (var item in battle_datas)
+                        {
+                            if (!battle_map.ContainsKey(item.time_stamp))
+                            {
+                                battle_map.Add(item.time_stamp, item);
+                            }
+                        }
+                        bool add1 = false;
+                        for (int i = 0; i < battle_count; i++)
+                        {
+                            long battle_time_stamp = long.Parse(data[pos++]); // 战斗时间
+                                                                              // Main.Logger.Log("/ 战斗时间");
+                            PlayerData player_data1 = new PlayerData();
+                            player_data1.name = data[pos++]; // 玩家名字
+                                                             // Main.Logger.Log("/ 玩家名字");
+                            player_data1.ip = data[pos++]; // ip地址
+                                                           // Main.Logger.Log("/ ip地址");
+                            player_data1.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
+                                                                            // Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
+                            player_data1.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
+                                                                                                                                      // Main.Logger.Log("/[3] 出战蛐蛐");
+                            player_data1.time_stamp = long.Parse(data[pos++]); // 心跳时间
+                                                                               // Main.Logger.Log("/ 心跳时间");
+                            player_data1.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
+                                                                         // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
+                            player_data1.level = idx;
+                            player_data1.desk_idx = idx2;
+                            player_data1.bet = int.Parse(data[pos++]); // 赌注
+                                                                       // Main.Logger.Log("/ 赌注");
+                            player_data1.SetImage(data[pos++]); // 形象
+                                                                // Main.Logger.Log("/ 形象");
+                            PlayerData player_data2 = new PlayerData();
+                            player_data2.name = data[pos++]; // 玩家名字
+                                                             // Main.Logger.Log("/ 玩家名字");
+                            player_data2.ip = data[pos++]; // ip地址
+                                                           // Main.Logger.Log("/ ip地址");
+                            player_data2.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
+                                                                            // Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
+                            player_data2.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
+                                                                                                                                      // Main.Logger.Log("/[3] 出战蛐蛐");
+                            player_data2.time_stamp = long.Parse(data[pos++]); // 心跳时间
+                                                                               // Main.Logger.Log("/ 心跳时间");
+                            player_data2.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
+                                                                         // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
+                            player_data2.level = idx;
+                            player_data2.desk_idx = idx2;
+                            player_data2.bet = int.Parse(data[pos++]); // 赌注
+                                                                       // Main.Logger.Log("/ 赌注");
+                            player_data2.SetImage(data[pos++]); // 形象
+                                                                // Main.Logger.Log("/ 形象");
+                            if (!battle_map.ContainsKey(battle_time_stamp))
+                            {
+                                add1 = true;
+                                BattleData battle_data = new BattleData() { time_stamp = battle_time_stamp, player_data = new PlayerData[2] { player_data1, player_data2 } };
+                                battle_map.Add(battle_time_stamp, battle_data);
+                            }
+                        }
+                        if (add1)
+                        {
+                            List<BattleData> list = new List<BattleData>(battle_map.Count);
+                            foreach (var item in battle_map)
+                            {
+                                list.Add(item.Value);
+                            }
+                            list.Sort();
+                            desk_data.battle_data = list.ToArray();
+                        }
+                        int chat_count = int.Parse(data[pos++]); // 聊天数量
+                                                                 // Main.Logger.Log("/ 聊天数量");
+                        ChatData[] chat_datas = desk_data.chat_data;
+                        Dictionary<long, ChatData> chat_map = new Dictionary<long, ChatData>();
+                        foreach (var item in chat_datas)
+                        {
+                            if (!chat_map.ContainsKey(item.time_stamp))
+                            {
+                                chat_map.Add(item.time_stamp, item);
+                            }
+                        }
+                        bool add2 = false;
+                        for (int i = 0; i < chat_count; i++)
+                        {
+                            long ts = long.Parse(data[pos++]); // 发言时间
+                                                               // Main.Logger.Log("/ 发言时间");
+                            string n = data[pos++]; // 发言者名字
+                                                    // Main.Logger.Log("/ 发言者名字");
+                            string p = data[pos++]; // 发言者ip
+                                                    // Main.Logger.Log("/ 发言者ip");
+                            string content = data[pos++]; // 发言内容
+                                                          // Main.Logger.Log("/ 发言内容");
+                            string param = data[pos++]; // 发言参数
+                                                        // Main.Logger.Log("/ 发言参数");
+                            if (!chat_map.ContainsKey(ts))
+                            {
+                                add2 = true;
+                                chat_map.Add(ts, new ChatData() { time_stamp = ts, name = n, ip = p, content = content, param = param });
+                            }
+                        }
+                        if (add2)
+                        {
+                            List<ChatData> list = new List<ChatData>(chat_map.Count);
+                            foreach (var item in chat_map)
+                            {
+                                list.Add(item.Value);
+                            }
+                            list.Sort();
+                            desk_data.chat_data = list.ToArray();
+                        }
+
+                        int battle_flag = int.Parse(data[pos++]); // 触发战斗
+                                                                  // Main.Logger.Log("/ 触发战斗");
+
+                        fun(null, time_stamp, desk_data, battle_flag);
+                    }
                     //}
                     //catch (Exception e)
                     //{
@@ -546,7 +546,7 @@ namespace GuiQuquAdventure // 聊天室
             }
         }
 
-        void DebugError(Exception e,string err)
+        void DebugError(Exception e, string err)
         {
             string s = "StackTrace:";
             s += e.StackTrace;
@@ -561,8 +561,8 @@ namespace GuiQuquAdventure // 聊天室
         }
     }
 
-        #region 大厅数据汇总
-        public class HallData // 大厅数据
+    #region 大厅数据汇总
+    public class HallData // 大厅数据
     {
         public RoomData[] room_data; //[11] 各个房间的数据
     }
@@ -650,7 +650,7 @@ namespace GuiQuquAdventure // 聊天室
             faceDate = new int[int.Parse(data[pos++])];
             for (int i = 0; i < faceDate.Length; i++)
             {
-                faceDate[i]= int.Parse(data[pos++]);
+                faceDate[i] = int.Parse(data[pos++]);
             }
             faceColor = new int[int.Parse(data[pos++])];
             for (int i = 0; i < faceColor.Length; i++)
@@ -676,7 +676,7 @@ namespace GuiQuquAdventure // 聊天室
 
     public abstract class SortTimeStamp : IComparable<SortTimeStamp>
     {
-        public long time_stamp; 
+        public long time_stamp;
         public virtual int CompareTo(SortTimeStamp other)
         {
             return other.time_stamp < this.time_stamp ? 1 : 0;
