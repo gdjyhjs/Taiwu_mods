@@ -178,12 +178,12 @@ namespace GuiQuquAdventure
 
         void OnClickQuqu(int idx)
         {
-            OpenQuquBattle();
+            SetQuquAndBet();
         }
 
         void OnClickBet()
         {
-            OpenQuquBattle();
+            SetQuquAndBet();
         }
 
         void SetQuquAndBet()

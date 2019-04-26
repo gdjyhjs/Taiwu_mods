@@ -318,8 +318,19 @@ namespace GuiQuquAdventure
             actorBack.transform.localPosition = new Vector3(-1400f, 0f, 0f);
             enemyBack.transform.localPosition = new Vector3(1400f, 0f, 0f);
             ququBattleWindow.transform.localPosition = new Vector3(0f, 1200f, 0f);
-            //ququBattleWindow.transform.DOLocalMoveY(0f, 0.2f).SetUpdate(true).OnComplete(SetActorAnimation);
             DateFile.instance.SystemAudioPlay(4, 1, 1f);
+            Main.Logger.Log("QuquBattleWindowOpend 战斗窗口打开!!!!!! ||" + Time.time);
+            try
+            {
+                ququBattleWindow.transform.DOLocalMoveY(0f, 0.2f).SetUpdate(true).OnComplete(SetActorAnimation);
+            }
+            catch (System.Exception e)
+            {
+                Main.Logger.Log(" ERROR :当前异常的信息: " + e.Message);
+                Main.Logger.Log(" ERROR :导致错误的应用程序或对象的名称: " + e.Source);
+                Main.Logger.Log(" ERROR :堆栈上的即时框架字符串: " + e.StackTrace);
+                throw;
+            }
         }
 
         private void SetActorAnimation()
@@ -648,7 +659,7 @@ namespace GuiQuquAdventure
             enemyQuquHp = new int[3];
             actorQuquSp = new int[3];
             enemyQuquSp = new int[3];
-            //MakeQuqu();
+            MakeQuqu();
             //showQuquIndex = GuiRandom.Range(0, 3);
             //for (int num17 = 0; num17 < actorQuquHpText.Length; num17++)
             //{
@@ -693,112 +704,112 @@ namespace GuiQuquAdventure
         /// </summary>
         private void MakeQuqu()
         {
-            actorQuquId = leftPlayer.ququ;
+            actorQuquId = new int[] { -99, -99, -99 };
+            enemyQuquId = new int[] { -99, -99, -99 };
 
-            if (null!=rightPlayer)
+
+
+
+            // 以下是给敌人创建蛐蛐
+            enemyQuquId = new int[3];
+            int num = DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][2]); // 敌人等级 1 4 7 10 13 16 19 22 25 28
+            int num2 = Mathf.Clamp(num / 3, 1, 9); // 1 - 9
+            int[] array = new int[3] // 最大蛐蛐等级 蛐蛐的等级为敌人等级的三分之一
             {
-                enemyQuquId = rightPlayer.ququ;
+            num2,
+            num2,
+            num2
+            };
+            int num3 = num % 3; // 
+            bool flag = num > 27;
+            if (!flag)
+            {
+                int num4 = GuiRandom.Range(0, 3);
+                array[num4] = Mathf.Clamp(array[num4] + num3, 1, 9); // 敌人等级不大于27时 随机一个蛐蛐等级增加
             }
-            //// 以下是给敌人创建蛐蛐
-            //enemyQuquId = new int[3];
-            //int num = DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][2]); // 敌人等级 1 4 7 10 13 16 19 22 25 28
-            //int num2 = Mathf.Clamp(num / 3, 1, 9); // 1 - 9
-            //int[] array = new int[3] // 最大蛐蛐等级 蛐蛐的等级为敌人等级的三分之一
-            //{
-            //num2,
-            //num2,
-            //num2
-            //};
-            //int num3 = num % 3; // 
-            //bool flag = num > 27;
-            //if (!flag)
-            //{
-            //    int num4 = GuiRandom.Range(0, 3);
-            //    array[num4] = Mathf.Clamp(array[num4] + num3, 1, 9); // 敌人等级不大于27时 随机一个蛐蛐等级增加
-            //}
-            //List<int> list = new List<int>(DateFile.instance.cricketDate.Keys);
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    int ququ_level = array[i]; // 蛐蛐等级
-            //    int ququ_level2 = array[i]; // 蛐蛐等级
-            //    int make_ququ_id = 0; // 最后要生成的蛐蛐id
-            //    int make_ququ_king_id = 0; // 虫王蛐蛐id
-            //    int partId = 0;
-            //    string[] array2 = DateFile.instance.cricketBattleDate[______ququBattleId][21 + i].Split('|');
-            //    if (array2.Length == 2) // 这个是虫王
-            //    {
-            //        make_ququ_king_id = DateFile.instance.ParseInt(array2[0]);
-            //        partId = DateFile.instance.ParseInt(array2[1]);
-            //    }
-            //    else
-            //    {
-            //        if (ququ_level >= 8) // 蛐蛐等级大于8
-            //        {
-            //            ququ_level2 = 0;
-            //            List<int> list2 = new List<int>();
-            //            for (int j = 0; j < list.Count; j++)
-            //            {
-            //                int ququ_id = list[j]; // 蛐蛐id
-            //                if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][1]) == ququ_level) // 查找到等级相符的蛐蛐
-            //                {
-            //                    int num10 = flag ?DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][1006]): DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][6]);
-            //                    // 抽中的权重
-            //                    for (int k = 0; k < num10; k++)
-            //                    {
-            //                        list2.Add(ququ_id);
-            //                    }
-            //                }
-            //            }
-            //            make_ququ_id = list2[GuiRandom.Range(0, list2.Count)];
-            //        }
-            //        else if (ququ_level >= 7)
-            //        {
-            //            ququ_level = Mathf.Clamp(ququ_level - GuiRandom.Range(0, ququ_level / 2), 1, 6); // num5减去最多一半
-            //        }
-            //        else if (GuiRandom.Range(0, 100) < 75)
-            //        {
-            //            ququ_level2 = Mathf.Clamp(ququ_level2 - GuiRandom.Range(0, ququ_level2 / 2), 1, 6); // num6减去最多一半
-            //        }
-            //        else  // num5减去最多一半
-            //        {
-            //            ququ_level = Mathf.Clamp(ququ_level - GuiRandom.Range(0, ququ_level / 2), 1, 6);
-            //        }
-            //        if (make_ququ_id == 0)
-            //        {
-            //            List<int> list3 = new List<int>();
-            //            for (int l = 0; l < list.Count; l++)
-            //            {
-            //                int num11 = list[l];
-            //                if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][3]) != 0 && DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][1]) == ququ_level)
-            //                {
-            //                    for (int m = 0; m < DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][6]); m++)
-            //                    {
-            //                        list3.Add(num11);
-            //                    }
-            //                }
-            //            }
-            //            make_ququ_king_id = list3[GuiRandom.Range(0, list3.Count)];
-            //        }
-            //        if (ququ_level2 > 0)
-            //        {
-            //            List<int> list4 = new List<int>();
-            //            for (int n = 0; n < list.Count; n++)
-            //            {
-            //                int num12 = list[n];
-            //                if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][4]) == 1 && DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][1]) == ququ_level2)
-            //                {
-            //                    for (int num13 = 0; num13 < DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][6]); num13++)
-            //                    {
-            //                        list4.Add(num12);
-            //                    }
-            //                }
-            //            }
-            //            partId = list4[GuiRandom.Range(0, list4.Count)];
-            //        }
-            //    }
-            //    enemyQuquId[i] = DateFile.instance.MakeNewItem(10000, -(i + 1));
-            //    GetQuquWindow.instance.MakeQuqu(enemyQuquId[i], (make_ququ_id > 0) ? make_ququ_id : make_ququ_king_id, partId);
-            //}
+            List<int> list = new List<int>(DateFile.instance.cricketDate.Keys);
+            for (int i = 0; i < 3; i++)
+            {
+                int ququ_level = array[i]; // 蛐蛐等级
+                int ququ_level2 = array[i]; // 蛐蛐等级
+                int make_color_id = 0; // 最后要生成的蛐蛐id
+                int make_color_id2 = 0; // 虫王蛐蛐id
+                int partId = 0;
+                string[] array2 = DateFile.instance.cricketBattleDate[______ququBattleId][21 + i].Split('|');
+                if (array2.Length == 2) // 这个是虫王
+                {
+                    make_color_id2 = DateFile.instance.ParseInt(array2[0]);
+                    partId = DateFile.instance.ParseInt(array2[1]);
+                }
+                else
+                {
+                    if (ququ_level >= 8) // 蛐蛐等级大于8
+                    {
+                        ququ_level2 = 0;
+                        List<int> list2 = new List<int>();
+                        for (int j = 0; j < list.Count; j++)
+                        {
+                            int ququ_id = list[j]; // 蛐蛐id
+                            if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][1]) == ququ_level) // 查找到等级相符的蛐蛐
+                            {
+                                int num10 = flag ? DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][1006]) : DateFile.instance.ParseInt(DateFile.instance.cricketDate[ququ_id][6]);
+                                // 抽中的权重
+                                for (int k = 0; k < num10; k++)
+                                {
+                                    list2.Add(ququ_id);
+                                }
+                            }
+                        }
+                        make_color_id = list2[GuiRandom.Range(0, list2.Count)];
+                    }
+                    else if (ququ_level >= 7)
+                    {
+                        ququ_level = Mathf.Clamp(ququ_level - GuiRandom.Range(0, ququ_level / 2), 1, 6); // num5减去最多一半
+                    }
+                    else if (GuiRandom.Range(0, 100) < 75)
+                    {
+                        ququ_level2 = Mathf.Clamp(ququ_level2 - GuiRandom.Range(0, ququ_level2 / 2), 1, 6); // num6减去最多一半
+                    }
+                    else  // num5减去最多一半
+                    {
+                        ququ_level = Mathf.Clamp(ququ_level - GuiRandom.Range(0, ququ_level / 2), 1, 6);
+                    }
+                    if (make_color_id == 0)
+                    {
+                        List<int> list3 = new List<int>();
+                        for (int l = 0; l < list.Count; l++)
+                        {
+                            int num11 = list[l];
+                            if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][3]) != 0 && DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][1]) == ququ_level)
+                            {
+                                for (int m = 0; m < DateFile.instance.ParseInt(DateFile.instance.cricketDate[num11][6]); m++)
+                                {
+                                    list3.Add(num11);
+                                }
+                            }
+                        }
+                        make_color_id2 = list3[GuiRandom.Range(0, list3.Count)];
+                    }
+                    if (ququ_level2 > 0)
+                    {
+                        List<int> list4 = new List<int>();
+                        for (int n = 0; n < list.Count; n++)
+                        {
+                            int num12 = list[n];
+                            if (DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][4]) == 1 && DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][1]) == ququ_level2)
+                            {
+                                for (int num13 = 0; num13 < DateFile.instance.ParseInt(DateFile.instance.cricketDate[num12][6]); num13++)
+                                {
+                                    list4.Add(num12);
+                                }
+                            }
+                        }
+                        partId = list4[GuiRandom.Range(0, list4.Count)];
+                    }
+                }
+                enemyQuquId[i] = DateFile.instance.MakeNewItem(10000, -(i + 1));
+                GetQuquWindow.instance.MakeQuqu(enemyQuquId[i], (make_color_id > 0) ? make_color_id : make_color_id2, partId);
+            }
         }
 
         private void UpdateActorQuquValue(int index)
@@ -2224,6 +2235,7 @@ namespace GuiQuquAdventure
         {
             instance = this;
             Transform _transform = transform;
+
             setBattleSpeedHolder = _transform.Find("QuquBattleBack/QuquBattleHolder/SetQuquBattleSpeed").gameObject;
             setBattleSpeedToggle = new Toggle[] {
 _transform.Find("QuquBattleBack/QuquBattleHolder/SetQuquBattleSpeed/x1").GetComponent<Toggle>(),
