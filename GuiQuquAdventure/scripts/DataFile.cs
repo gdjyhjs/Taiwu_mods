@@ -294,12 +294,12 @@ namespace GuiQuquAdventure // 聊天室
         /// <param name="last_chat_time_stamp">当前聊天数据的最后一次发言时间</param>
         /// <param name="last_battle_time_stamp">当前战斗数据的最后一次战斗时间</param>
         /// <param name="bet">押注物品id</param>
-        public void GetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, int bet, int[] ququ, string image, string chat_content = null, string chat_param = null)
+        public void GetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content = null, string chat_param = null)
         {
             StartCoroutine(HttpGetDeskData(fun, name, room_idx, desk_idx, ready, observer, last_chat_time_stamp, last_battle_time_stamp, bet, ququ, image, chat_content, chat_param));
         }
 
-        IEnumerator HttpGetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, int bet, int[] ququ, string image, string chat_content, string chat_param)
+        IEnumerator HttpGetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content, string chat_param)
         {
             int msg = 10003; // 协议号
             WWWForm form = new WWWForm();
@@ -403,7 +403,7 @@ namespace GuiQuquAdventure // 聊天室
                                                           // Main.Logger.Log("/ ip地址");
                             player_data.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押0号注游客 3押1号注游客
                                                                            // Main.Logger.Log("/ 0非游客 1普通游客 2押0号注游客 3押1号注游客");
-                            player_data.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
+                            player_data.ququ = new string[] { data[pos++], data[pos++], data[pos++] }; //[3] 出战蛐蛐
                                                                                                                                      // Main.Logger.Log("/[3] 出战蛐蛐");
                             player_data.time_stamp = long.Parse(data[pos++]); // 心跳时间
                                                                               // Main.Logger.Log("/ 心跳时间");
@@ -411,7 +411,7 @@ namespace GuiQuquAdventure // 聊天室
                                                                         // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
                             player_data.level = idx;
                             player_data.desk_idx = idx2;
-                            player_data.bet = int.Parse(data[pos++]); // 赌注
+                            player_data.bet = data[pos++]; // 赌注
                                                                       // Main.Logger.Log("/ 赌注");
                             player_data.SetImage(data[pos++]); // 设置玩家形象
                                                                // Main.Logger.Log("/ 设置玩家形象");
@@ -440,7 +440,7 @@ namespace GuiQuquAdventure // 聊天室
                                                            // Main.Logger.Log("/ ip地址");
                             player_data1.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
                                                                             // Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
-                            player_data1.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
+                            player_data1.ququ = new string[] { data[pos++], data[pos++], data[pos++] }; //[3] 出战蛐蛐
                                                                                                                                       // Main.Logger.Log("/[3] 出战蛐蛐");
                             player_data1.time_stamp = long.Parse(data[pos++]); // 心跳时间
                                                                                // Main.Logger.Log("/ 心跳时间");
@@ -448,7 +448,7 @@ namespace GuiQuquAdventure // 聊天室
                                                                          // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
                             player_data1.level = idx;
                             player_data1.desk_idx = idx2;
-                            player_data1.bet = int.Parse(data[pos++]); // 赌注
+                            player_data1.bet = data[pos++]; // 赌注
                                                                        // Main.Logger.Log("/ 赌注");
                             player_data1.SetImage(data[pos++]); // 形象
                                                                 // Main.Logger.Log("/ 形象");
@@ -459,15 +459,15 @@ namespace GuiQuquAdventure // 聊天室
                                                            // Main.Logger.Log("/ ip地址");
                             player_data2.observer = int.Parse(data[pos++]); // 0非游客 1普通游客 2押注游客
                                                                             // Main.Logger.Log("/ 0非游客 1普通游客 2押注游客");
-                            player_data2.ququ = new int[] { int.Parse(data[pos++]), int.Parse(data[pos++]), int.Parse(data[pos++]) }; //[3] 出战蛐蛐
-                                                                                                                                      // Main.Logger.Log("/[3] 出战蛐蛐");
+                            player_data2.ququ = new string[] { data[pos++], data[pos++], data[pos++] }; //[3] 出战蛐蛐
+                                                                                                        // Main.Logger.Log("/[3] 出战蛐蛐");
                             player_data2.time_stamp = long.Parse(data[pos++]); // 心跳时间
                                                                                // Main.Logger.Log("/ 心跳时间");
                             player_data2.ready = int.Parse(data[pos++]); // 准备 0是未准备 1是确认赌注 2是准备好了
                                                                          // Main.Logger.Log("/ 准备 0是未准备 1是确认赌注 2是准备好了");
                             player_data2.level = idx;
                             player_data2.desk_idx = idx2;
-                            player_data2.bet = int.Parse(data[pos++]); // 赌注
+                            player_data2.bet = data[pos++]; // 赌注
                                                                        // Main.Logger.Log("/ 赌注");
                             player_data2.SetImage(data[pos++]); // 形象
                                                                 // Main.Logger.Log("/ 形象");
@@ -591,15 +591,197 @@ namespace GuiQuquAdventure // 聊天室
     public class PlayerData // 玩家数据
     {
         public static PlayerData self;
+        public static int[] client_ids = new int[] { -99, -99, -99 }; // 客户端玩家出战的蛐蛐
         public string name; // 玩家名字
         public string ip; // ip地址
         public int observer; // -1是空 0非游客 1普通游客 2押注左边选手的游客 3押注右边选手的游客
-        public int[] ququ = new int[3]; //[3] 出战蛐蛐
+        public string[] ququ; //[3] 出战蛐蛐
         public long time_stamp; // 心跳时间
         public int ready; // 准备 0是未准备 1是确认赌注 2是准备好了
         public int level; // 所在房间
         public int desk_idx; // 所在桌子
-        public int bet; // 赌注
+        public string bet; // 赌注数据
+        public int bet_id; // 赌注id
+        public int bet_typ; // 赌注类型
+
+        public PlayerData()
+        {
+            faceDate = new int[] { 5, 21, 0, 16, 41, 21, 12, 18 };
+            faceColor = new int[] { 2, 9, 3, 9, 5, 6, 0, 4, 28 };
+            ququ = new string[3] { "0", "0", "0" };
+            bet_id = -98;
+            bet_typ = -1;
+            bet = "0";
+        }
+
+        public void SetBet()
+        {
+            //0：赌注类型 1：物品原id  2：物品数据 3：物品变化
+            string typ0 = bet_typ.ToString();
+            string id1 = null;
+            string data2;
+            string data3;
+            string[] ss;
+            switch (bet_typ)
+            {
+                case 0: // 资源
+                    id1 = bet_id.ToString();
+                    ss = new string[] { typ0, id1 };
+                    break;
+                case 1: // 物品
+                    Main.Logger.Log("赌注id：" + bet_id);
+                    if (DateFile.instance.itemsDate.ContainsKey(bet_id)) // itemsDate是记录一些常状变化的参数
+                    {
+                        Dictionary<int, string> item = DateFile.instance.itemsDate[bet_id];
+                        string[] map = new string[item.Count * 2];
+                        int pos = 0;
+                        foreach (var da in item)
+                        {
+                            Main.Logger.Log("itemsDate " + da.Key + ":" + da.Value);
+                            map[pos++] = da.Key.ToString();
+                            map[pos++] = da.Value;
+                        }
+                        data2 = string.Join("#", map);
+                        id1 = item[999];
+                    }
+                    else
+                    {
+                        data2 = "";
+                    }
+                    if (DateFile.instance.itemsChangeDate.ContainsKey(bet_id)) // itemsChangeDate记录装备的精制数据
+                    {
+                        Dictionary<int, int> item = DateFile.instance.itemsChangeDate[bet_id];
+                        string[] map = new string[item.Count * 2];
+                        int pos = 0;
+                        foreach (var da in item)
+                        {
+                            Main.Logger.Log("itemsChangeDate " + da.Key + ":" + da.Value);
+                            map[pos++] = da.Key.ToString();
+                            map[pos++] = da.Value.ToString();
+                        }
+                        data3 = string.Join("#", map);
+                    }
+                    else
+                    {
+                        data3 = "";
+                    }
+                    if (id1 == null)
+                        id1 = bet_id.ToString();
+                    ss = new string[] { typ0, id1, data2, data3 };
+                    break;
+
+                case 2: // 人物W
+                    id1 = bet_id.ToString();
+                    ss = new string[] { typ0, id1 };
+                    break;
+                default:
+                    ss = new string[] { typ0 };
+                    break;
+            }
+            bet = string.Join("｜", ss);
+            Main.Logger.Log("保存赌注 " + bet);
+        }
+
+        public void SetBetIdAndTyp(int p)
+        {
+            string[] ss = bet.Split('｜');
+            if (ss.Length < 2)
+            {
+                bet_id = -98;
+                bet_typ = -1;
+            }
+            else
+            {
+                //0：赌注类型 1：物品原id 2：物品数据
+                bet_typ = int.Parse(ss[0]);
+                int id = int.Parse(ss[1]);
+                switch (bet_typ)
+                {
+                    case 0: // 资源
+                        Debug.Log("资源");
+                        bet_id = id;
+                        break;
+                    case 1: // 物品
+                        Debug.Log("物品");
+                        if (DateFile.instance.presetitemDate.ContainsKey(id))
+                        {
+                            if (DateFile.instance.presetitemDate[id][6] == "0")
+                            {
+                                int item_id = DateFile.instance.MakeNewItem(id, -(1111 * (p + 1)));
+                                string[] data = ss[2].Split('#');
+                                Dictionary<int, string> item = DateFile.instance.itemsDate[item_id];
+                                for (int i = 0; i < data.Length; i += 2)
+                                {
+                                    int key = int.Parse(data[i]);
+                                    string value = data[i + 1];
+                                    if (item.ContainsKey(key))
+                                        item[key] = value;
+                                    else
+                                        item.Add(key, value);
+                                }
+                                bet_id = item_id;
+                            }
+                            else
+                            {
+                                bet_id = id;
+                            }
+                        }
+                        else
+                        {
+                            goto default;
+                        }
+                        break;
+                    case 2: // 人物
+                        Debug.Log("人物");
+                        break;
+                    default:
+                        Debug.Log("？？？"+bet_typ);
+                        bet_id = id;
+                        break;
+                }
+            }
+        }
+        public static void SetBattleQuqu(int itemId, int idx)
+        {
+            int color = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2002));
+            int partId = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2003));
+            string injurys = DateFile.instance.GetItemDate(itemId, 2004);
+            injurys.Replace('|', '｜');
+            client_ids[idx] = itemId;
+            self.ququ[idx] = color + "#" + partId + "#" + injurys;
+        }
+
+        public int GetQuquColor(int idx)
+        {
+            string s = ququ[idx];
+            if (s == "0")
+            {
+                return 0;
+            }
+            string[] ss = s.Split('#');
+            return int.Parse(ss[0]);
+        }
+        public int GetQuquPartId(int idx)
+        {
+            string s = ququ[idx];
+            if (s == "0")
+            {
+                return 0;
+            }
+            string[] ss = s.Split('#');
+            return int.Parse(ss[1]);
+        }
+        public string GetQuquInjurys(int idx)
+        {
+            string s = ququ[idx];
+            if (s == "0")
+            {
+                return "";
+            }
+            string[] ss = s.Split('#');
+            return ss[2].Replace('｜', '|');
+        }
+
 
         #region 人物形象
         public int age; // 年龄 茄子代号11
@@ -608,12 +790,6 @@ namespace GuiQuquAdventure // 聊天室
         public int[] faceDate; // 使用的部位 茄子代号995|分割
         public int[] faceColor; // 部位的颜色 茄子代号996|分割
         public int clotheId; // 穿着衣服ID 茄子代号305
-        #endregion
-        public PlayerData()
-        {
-            faceDate = new int[] { 5, 21, 0, 16, 41, 21, 12, 18 };
-            faceColor = new int[] { 2, 9, 3, 9, 5, 6, 0, 4, 28 };
-        }
 
         // 获取人物形象标识
         public string GetImage()
@@ -659,6 +835,7 @@ namespace GuiQuquAdventure // 聊天室
             }
             clotheId = int.Parse(data[pos++]);
         }
+        #endregion
     }
 
     public class BattleData : SortTimeStamp // 对战数据

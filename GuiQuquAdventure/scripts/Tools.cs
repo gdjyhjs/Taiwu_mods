@@ -63,7 +63,6 @@ namespace GuiQuquAdventure
 
         public static void UpdateFace(ActorFace actorFace, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = false)
         {
-            Main.Logger.Log("bbbb");
             if (faceDate.Length == 1)
             {
                 actorFace.ageImage.gameObject.SetActive(value: false);
@@ -93,7 +92,6 @@ namespace GuiQuquAdventure
             else
             {
                 bool flag = life || false || false;
-                Main.Logger.Log("bbbb111"+ flag);
                 if (!flag)
                 {
                     actorFace.ageImage.gameObject.SetActive(value: false);
@@ -122,7 +120,6 @@ namespace GuiQuquAdventure
                 }
                 else
                 {
-                    Main.Logger.Log("bbbb2222" + flag);
                     int num = (actorGenderChange == 0) ? (gender - 1) : ((gender == 1) ? 1 : 0);
                     int key = Mathf.Min(faceDate[0], DateFile.instance.ParseInt(GetSprites.instance.actorFaceDate[num][98]) - 1);
                     int key2 = Mathf.Min(faceDate[0], DateFile.instance.ParseInt(GetSprites.instance.actorFaceDate[num][99]) - 1);
@@ -140,7 +137,6 @@ namespace GuiQuquAdventure
                     actorFace.hairOther.gameObject.SetActive(flag || (!flag && faceDate[7] == 15));
                     actorFace.clothes.gameObject.SetActive(value: true);
                     actorFace.clothesColor.gameObject.SetActive(value: true);
-                    Main.Logger.Log("bbbb2222 " + age);
                     if (age <= 14)
                     {
                         Dictionary<int, Dictionary<int, Sprite[]>> dictionary = actorFace.smallSize ? GetSprites.instance.childFaceSmall : GetSprites.instance.childFace;

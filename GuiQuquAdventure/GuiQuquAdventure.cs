@@ -83,8 +83,8 @@ namespace GuiQuquAdventure
                 // 用完就删 asset 包用完就删 节约内存
                 my_ui_ab.Unload(false);
 
-                Canvas canvas = GameObject.FindObjectOfType<Canvas>();
-                obj.transform.SetParent(canvas.transform, false);
+                obj.transform.SetParent(QuquBattleSystem.instance.transform.parent, false);
+                obj.transform.SetSiblingIndex(QuquBattleSystem.instance.transform.GetSiblingIndex() + 1);
                 obj.AddComponent<QuquHall>();
             }
         }
@@ -92,8 +92,10 @@ namespace GuiQuquAdventure
 
     class MaintainHall : MonoBehaviour
     {
+        public static MaintainHall instance;
         void Start()
         {
+            instance = this;
             StartCoroutine(MaintainWhile());
         }
 
@@ -122,6 +124,38 @@ namespace GuiQuquAdventure
                 {
                     Main.LoadUI();
                 }
+            }
+        }
+
+        public void AddInvoke(Action fun, float time)
+        {
+            StartCoroutine(GoInvoke(fun, time));
+        }
+
+        private IEnumerator GoInvoke(Action fun, float time)
+        {
+            yield return new WaitForSeconds(time);
+            fun();
+        }
+
+        void OnGUI()
+        {
+            if (GUI.Button(new Rect(20, 100, 50, 20), "设置"))
+            {
+                GuiQuquBattleSystem.instance.itemId = -1; // 即将获得或者失去的物品
+                GuiQuquBattleSystem.instance.actorTyp = GuiQuquBattleSystem.ActorTyp.LeftObserver;
+                GuiQuquBattleSystem.instance.playId = -1;
+                GuiQuquBattleSystem.instance.leftPlayer = PlayerData.self;
+                GuiQuquBattleSystem.instance.rightPlayer = null;
+                GuiQuquBattleSystem.instance.ShowQuquBattleWindow();
+            }
+            if (GUI.Button(new Rect(20, 150, 50, 20), "关闭"))
+            {
+                GuiQuquBattleSystem.instance.CloseQuquBattleWindow();
+            }
+            if (GUI.Button(new Rect(20, 200, 50, 20), "赌人"))
+            {
+                QuquBattleSystem.instance.chooseActorButton.interactable = true;
             }
         }
     }
