@@ -140,23 +140,6 @@ namespace GuiQuquAdventure
 
         void OnGUI()
         {
-            if (GUI.Button(new Rect(20, 100, 50, 20), "设置"))
-            {
-                GuiQuquBattleSystem.instance.itemId = -1; // 即将获得或者失去的物品
-                GuiQuquBattleSystem.instance.actorTyp = GuiQuquBattleSystem.ActorTyp.LeftObserver;
-                GuiQuquBattleSystem.instance.playId = -1;
-                GuiQuquBattleSystem.instance.leftPlayer = PlayerData.self;
-                GuiQuquBattleSystem.instance.rightPlayer = null;
-                GuiQuquBattleSystem.instance.ShowQuquBattleWindow();
-            }
-            if (GUI.Button(new Rect(20, 150, 50, 20), "关闭"))
-            {
-                GuiQuquBattleSystem.instance.CloseQuquBattleWindow();
-            }
-            if (GUI.Button(new Rect(20, 200, 50, 20), "赌人"))
-            {
-                QuquBattleSystem.instance.chooseActorButton.interactable = true;
-            }
         }
     }
 }

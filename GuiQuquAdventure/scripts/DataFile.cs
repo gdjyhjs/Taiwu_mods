@@ -294,12 +294,12 @@ namespace GuiQuquAdventure // 聊天室
         /// <param name="last_chat_time_stamp">当前聊天数据的最后一次发言时间</param>
         /// <param name="last_battle_time_stamp">当前战斗数据的最后一次战斗时间</param>
         /// <param name="bet">押注物品id</param>
-        public void GetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content = null, string chat_param = null)
+        public void GetDeskData(Action<string, long, DeskData, string> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content = null, string chat_param = null)
         {
             StartCoroutine(HttpGetDeskData(fun, name, room_idx, desk_idx, ready, observer, last_chat_time_stamp, last_battle_time_stamp, bet, ququ, image, chat_content, chat_param));
         }
 
-        IEnumerator HttpGetDeskData(Action<string, long, DeskData, int> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content, string chat_param)
+        IEnumerator HttpGetDeskData(Action<string, long, DeskData, string> fun, string name, int room_idx, int desk_idx, int ready, int observer, long last_chat_time_stamp, long last_battle_time_stamp, string bet, string[] ququ, string image, string chat_content, string chat_param)
         {
             int msg = 10003; // 协议号
             WWWForm form = new WWWForm();
@@ -325,7 +325,7 @@ namespace GuiQuquAdventure // 聊天室
                 if (getData.isNetworkError || getData.isHttpError)
                 {
                     string err = msg + ":http:" + getData.error;
-                    fun(err, 0, null, 0);
+                    fun(err, 0, null, "0");
                 }
                 else
                 {
@@ -344,7 +344,7 @@ namespace GuiQuquAdventure // 聊天室
                     if (errId > -1)
                     {
                         string err = err_list[errId];
-                        fun(err, time_stamp, null, 0);
+                        fun(err, time_stamp, null, "0");
                     }
                     else
                     {
@@ -529,7 +529,7 @@ namespace GuiQuquAdventure // 聊天室
                             desk_data.chat_data = list.ToArray();
                         }
 
-                        int battle_flag = int.Parse(data[pos++]); // 触发战斗
+                        string battle_flag = data[pos++]; // 触发战斗
                                                                   // Main.Logger.Log("/ 触发战斗");
 
                         fun(null, time_stamp, desk_data, battle_flag);
@@ -575,6 +575,12 @@ namespace GuiQuquAdventure // 聊天室
         public DeskData[] desk_data; //[100] 房间的桌子
         public PlayerData[] player_data; //[300] 玩家数据
         public ChatData[] chat_data = new ChatData[0]; //[50] 聊天记录
+
+        public static int GetRoomNeedResource(int bet_typ, int bet_id, int level)
+        {
+            return level * 1000;
+            return 0;
+        }
     }
 
 
@@ -591,6 +597,7 @@ namespace GuiQuquAdventure // 聊天室
     public class PlayerData // 玩家数据
     {
         public static PlayerData self;
+        public static int client_bet = 0; // 客户端押注的物品id
         public static int[] client_ids = new int[] { -99, -99, -99 }; // 客户端玩家出战的蛐蛐
         public string name; // 玩家名字
         public string ip; // ip地址
@@ -616,6 +623,7 @@ namespace GuiQuquAdventure // 聊天室
 
         public void SetBet()
         {
+            client_bet = bet_id;
             //0：赌注类型 1：物品原id  2：物品数据 3：物品变化
             string typ0 = bet_typ.ToString();
             string id1 = null;
@@ -741,6 +749,69 @@ namespace GuiQuquAdventure // 聊天室
                 }
             }
         }
+        public static void GetBattleAttr(string bet, int p, out int betId, out int betTyp,out GuiQuquBattleSystem.ActorTyp actorTyp, out int deskTyp,out int deskLevel)
+        {
+            string[] ss = bet.Split('｜');
+            //0：赌注类型 1：物品原id 2：物品数据
+            betTyp = int.Parse(ss[0]);
+            int id = int.Parse(ss[1]);
+            deskLevel = int.Parse(ss[ss.Length - 1]);
+            deskTyp = int.Parse(ss[ss.Length - 2]);
+            actorTyp = (GuiQuquBattleSystem.ActorTyp)int.Parse(ss[ss.Length - 3]);
+            switch (betTyp)
+            {
+                case 0: // 资源
+                    Debug.Log("资源");
+                    betId = id;
+                    break;
+                case 1: // 物品
+                    Debug.Log("物品");
+                    if (DateFile.instance.presetitemDate.ContainsKey(id))
+                    {
+                        if (DateFile.instance.presetitemDate[id][6] == "0")
+                        {
+                            int item_id = DateFile.instance.MakeNewItem(id, -(1111 * (p + 1)));
+                            string[] data = ss[2].Split('#');
+                            Dictionary<int, string> item = DateFile.instance.itemsDate[item_id];
+                            for (int i = 0; i < data.Length; i += 2)
+                            {
+                                int key = int.Parse(data[i]);
+                                string value = data[i + 1];
+                                if (item.ContainsKey(key))
+                                    item[key] = value;
+                                else
+                                    item.Add(key, value);
+                            }
+                            betId = item_id;
+                        }
+                        else
+                        {
+                            betId = id;
+                        }
+                    }
+                    else
+                    {
+                        goto default;
+                    }
+                    break;
+                case 2: // 人物
+                    Debug.Log("人物");
+                    betId = id;
+                    break;
+                default:
+                    Debug.Log("？？？" + betTyp);
+                    betId = id;
+                    break;
+            }
+        }
+        public static void LoseBet(string bet)
+        {
+
+        }
+        public static void WinBet(string bet)
+        {
+
+        }
         public static void SetBattleQuqu(int itemId, int idx)
         {
             int color = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2002));
@@ -840,7 +911,13 @@ namespace GuiQuquAdventure // 聊天室
 
     public class BattleData : SortTimeStamp // 对战数据
     {
+        public static List<BattleData> battleDatas = new List<BattleData>();
+        public BattleData()
+        {
+            battleDatas.Add(this);
+        }
         public PlayerData[] player_data; //[2] 玩家数据
+        public string battleFlag;
     }
 
     public class ChatData : SortTimeStamp // 聊天数据

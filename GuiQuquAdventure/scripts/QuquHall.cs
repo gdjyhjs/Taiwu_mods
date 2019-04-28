@@ -212,7 +212,6 @@ namespace GuiQuquAdventure
 
         void SetQuquAndBet()
         {
-            GuiQuquBattleSystem.instance.itemId = -1; // 即将获得或者失去的物品
             GuiQuquBattleSystem.instance.actorTyp =  GuiQuquBattleSystem.ActorTyp.LeftObserver;
             GuiQuquBattleSystem.instance.playId = -1;
             GuiQuquBattleSystem.instance.leftPlayer = PlayerData.self;
@@ -250,28 +249,12 @@ namespace GuiQuquAdventure
                 tf_ququ.SetParent(tfQuqu[i], false);
 
 
-                rtfs[i] = tf_ququ as RectTransform;
             }
-            rtfs[3] = tf_bet as RectTransform;
 
             UpdateBetAndQuqu();
 
         }
 
-        int x, y;
-        RectTransform[] rtfs = new RectTransform[4];
-        void OnGUI()
-        {
-            int.TryParse(GUI.TextField(new Rect(20, 300, 50, 20), x.ToString()), out x);
-            int.TryParse(GUI.TextField(new Rect(20, 350, 50, 20), y.ToString()), out y);
-            for (int i = 0; i < 4; i++)
-            {
-                if (GUI.Button(new Rect(20, 400 + 50 * i, 50, 20), "pos "+i))
-                {
-                    rtfs[i].anchoredPosition = new Vector2(x, y);
-                }
-            }
-        }
 
         public void UpdateBetAndQuqu()
         {
@@ -505,7 +488,7 @@ namespace GuiQuquAdventure
             }
         }
 
-        void OnDeskData(string error, long time_stamp, DeskData deskData, int battle_flag)
+        void OnDeskData(string error, long time_stamp, DeskData deskData, string battle_flag)
         {
             next_auto_send_time = Time.time + auto_send_interval /2;
             if (null == error)
@@ -526,7 +509,7 @@ namespace GuiQuquAdventure
                         tTitle.text = self.name + " 大厅>" + RoomObj.level_name[self.level] + ">" + (self.desk_idx + 1) + "号桌";
                     }
 
-                    if (battle_flag != 0) // 触发战斗
+                    if (battle_flag != "0") // 触发战斗
                     {
                         Debug.Log("触发战斗");
                         self.ready = 0; // 准备战斗恢复为未准备
@@ -534,6 +517,7 @@ namespace GuiQuquAdventure
                         {
                             self.observer = 1; // 押注观战恢复为普通观战
                         }
+                        PlayBattle(battle_flag);
                     }
 
                     // 聊天
@@ -555,7 +539,7 @@ namespace GuiQuquAdventure
             }
         }
 
-        void PlayBattle(int battleFlag)
+        void PlayBattle(string battleFlag)
         {
             BattleData[]  battleDatas = DataFile.instance.hall_data.room_data[self.level].desk_data[self.desk_idx].battle_data;
             if(battleDatas != null && battleDatas.Length > 0)
@@ -563,11 +547,14 @@ namespace GuiQuquAdventure
                 BattleData battleData = battleDatas[battleDatas.Length - 1]; // 拿到要播放的战斗数据
                 if (battleData.player_data != null && battleData.player_data.Length > 1 && GuiQuquBattleSystem.instance.playId != battleData.time_stamp)
                 {
-                    GuiQuquBattleSystem.instance.itemId = battleFlag / 10; // 即将获得或者失去的物品
-                    GuiQuquBattleSystem.instance.actorTyp = (GuiQuquBattleSystem.ActorTyp)(battleFlag % 10);
+                    string[] ss = battleFlag.Split('｜');
+                    battleData.battleFlag = battleFlag;
+                    GuiQuquBattleSystem.instance.observer_battleFlag = battleFlag;
+                    GuiQuquBattleSystem.instance.actorTyp = (GuiQuquBattleSystem.ActorTyp)int.Parse(ss[ss.Length - 3]);
                     GuiQuquBattleSystem.instance.playId = battleData.time_stamp;
                     GuiQuquBattleSystem.instance.leftPlayer = battleData.player_data[0];
                     GuiQuquBattleSystem.instance.rightPlayer = battleData.player_data[1];
+                    GuiQuquBattleSystem.instance.replay = false;
                     OpenQuquBattle();
                 }
             }
@@ -591,44 +578,52 @@ namespace GuiQuquAdventure
             GuiQuquBattleSystem.instance.CloseQuquBattleWindow();
         }
 
-        //void OnGUI()
-        //{
-        //    if(GUI.Button(new Rect(20, 20, 50, 25), "对战"))
-        //    {
+        string s1 = "";
+        string s2 = "";
+        string s3 = "true";
+        void OnGUI()
+        {
+            s1 = GUI.TextField(new Rect(10, 60, 40, 125), s1);
+            s2 = GUI.TextField(new Rect(10, 110, 40, 125), s2);
+            if (GUI.Button(new Rect(10, 10, 40, 25), "对战"))
+            {
 
-        //        // 初始化测试数据
-        //        int battleFlag = 7707090;
-        //        BattleData battleData = new BattleData();
-        //        battleData.time_stamp = 111;
-        //        PlayerData[] playerDatas = new PlayerData[2];
-        //        battleData.player_data = playerDatas;
-        //        for (int i = 0; i < playerDatas.Length; i++)
-        //        {
-        //            PlayerData data = new PlayerData();
-        //            playerDatas[i] = data;
-        //            data.name = "晴华" + i;
-        //            data.ip = "113.66.219.135";
-        //            data.observer = 0;
-        //            data.ququ = new string[] { "101#3001#0｜12", "101#3001#0｜12", "101#3001#0｜12" };
-        //            data.time_stamp = 1556171873270;
-        //            data.ready = 0;
-        //            data.level = -1;
-        //            data.desk_idx = 0;
-        //            data.bet = "0";
-        //            data.SetImage("22,2,0,8,5,21,0,16,41,21,12,18,8,2,9,3,9,5,6,0,4,1");
-        //        }
+                // 初始化测试数据
+                int battleFlag = 7707090;
+                BattleData battleData = new BattleData();
+                battleData.battleFlag = s2;
+                battleData.time_stamp = 111;
+                PlayerData[] playerDatas = new PlayerData[2];
+                battleData.player_data = playerDatas;
+                for (int i = 0; i < playerDatas.Length; i++)
+                {
+                    PlayerData data = new PlayerData();
+                    playerDatas[i] = data;
+                    data.name = "晴华" + i;
+                    data.ip = "113.66.219.135";
+                    data.observer = 0;
+                    data.ququ = new string[] { "101#3001#0｜12", "101#3001#0｜12", "101#3001#0｜12" };
+                    data.time_stamp = 1556171873270;
+                    data.ready = 0;
+                    data.level = -1;
+                    data.desk_idx = 0;
+                    data.bet = s1;
+                    data.SetImage("22,2,0,8,5,21,0,16,41,21,12,18,8,2,9,3,9,5,6,0,4,1");
+                }
 
 
-        //        if (battleData.player_data != null && battleData.player_data.Length > 1 && GuiQuquBattleSystem.instance.playId != battleData.time_stamp)
-        //        {
-        //            GuiQuquBattleSystem.instance.itemId = battleFlag / 10; // 即将获得或者失去的物品
-        //            GuiQuquBattleSystem.instance.actorTyp = (GuiQuquBattleSystem.ActorTyp)(battleFlag % 10);
-        //            GuiQuquBattleSystem.instance.playId = battleData.time_stamp;
-        //            GuiQuquBattleSystem.instance.leftPlayer = battleData.player_data[0];
-        //            GuiQuquBattleSystem.instance.rightPlayer = battleData.player_data[1];
-        //            OpenQuquBattle();
-        //        }
-        //    }
-        //}
+                if (battleData.player_data != null && battleData.player_data.Length > 1 && GuiQuquBattleSystem.instance.playId != battleData.time_stamp)
+                {
+                    string[] ss = battleData.battleFlag.Split('｜');
+                    GuiQuquBattleSystem.instance.actorTyp = (GuiQuquBattleSystem.ActorTyp)int.Parse(ss[ss.Length - 3]);
+                    GuiQuquBattleSystem.instance.observer_battleFlag = battleData.battleFlag;
+                    GuiQuquBattleSystem.instance.playId = battleData.time_stamp;
+                    GuiQuquBattleSystem.instance.leftPlayer = battleData.player_data[0];
+                    GuiQuquBattleSystem.instance.rightPlayer = battleData.player_data[1];
+                    GuiQuquBattleSystem.instance.replay = bool.Parse(s3);
+                    OpenQuquBattle();
+                }
+            }
+        }
     }
 }
