@@ -7,11 +7,11 @@ namespace GuiQuquAdventure
 {
     public class RoomDeskObj : MonoBehaviour
     {
-        readonly string des_format_str = "{0}号桌\n<size=22><color=red>{1}</color></size>";
+        readonly string des_format_str = "{0}{1}号桌\n<size=22><color=red>{2}\n{3}</color></size>";
         readonly string[] typ_name = new string[2]
         {
-            "对赌桌\n胜利获得对方赌注物品",
-            "自赌桌\n胜利获得自己赌注物品",
+            "对赌桌",
+            "自赌桌",
         };
         RoomChair[] chairs;
         Text des;
@@ -35,7 +35,37 @@ namespace GuiQuquAdventure
                 chairs[i].SetPlayerShow((mark & bit) == bit, desk_idx, i);
             }
             typ = (mark & (1 << chairs.Length)) > 0 ? 1 : 0;
-            des.text = string.Format(des_format_str, (desk_idx + 1), typ_name[typ]);
+            string des = "";
+            int desk_level = desk_idx / 100;
+            switch (PlayerData.self.bet_typ)
+            {
+                case 0:
+                    des = $"每次需要{DeskData.GetRoomNeedResource(0, PlayerData.self.bet_id, desk_level)}{DateFile.instance.resourceDate[PlayerData.self.bet_id][1]}!";
+                    break;
+                case 1:
+                    des = $"物品价值至少{DeskData.GetRoomNeedResource(7, PlayerData.self.bet_id, desk_level)}!";
+                    break;
+                case 2:
+                    des = $"人物身价至少{DeskData.GetRoomNeedResource(8, PlayerData.self.bet_id, desk_level)}!";
+                    break;
+                default:
+                    break;
+            }
+
+            this.des.text = string.Format(des_format_str, GetDeskLevelName(desk_level), desk_idx % 10 + 1, typ_name[typ], des);
+        }
+
+        public static string GetDeskLevelName(int desk_level)
+        {
+            if(desk_level < 1 || desk_level > 9)
+            {
+                return "自由";
+            }
+            else
+            {
+                return DateFile.instance.SetColoer(20001 + desk_level, DateFile.instance.massageDate[8001][2].Split('|')[desk_level - 1]);
+            }
+
         }
 
     }

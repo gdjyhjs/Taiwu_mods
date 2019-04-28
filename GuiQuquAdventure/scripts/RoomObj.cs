@@ -7,20 +7,7 @@ namespace GuiQuquAdventure
 {
     public class RoomObj : MonoBehaviour
     {
-        public static readonly string[] level_name = new string[]
-        {
-        "无限制竞技场",
-        "九品竞技场",
-        "八品竞技场",
-        "七品竞技场",
-        "六品竞技场",
-        "五品竞技场",
-        "四品竞技场",
-        "三品竞技场",
-        "二品竞技场",
-        "一品竞技场",
-        };
-        readonly static string name_format_str = "{0}\n<size=22> ({1}人在线)</size>";
+        readonly static string name_format_str = "{0}蛐蛐房\n<size=22> ({1}人在线)</size>";
 
         private int level = -1;
         private int people_num = -1;
@@ -73,10 +60,23 @@ namespace GuiQuquAdventure
         {
             if (open && text && (level != this.level || people_num != num) && level > -1 && num > -1)
             {
-                text.text = string.Format(name_format_str, level_name[level], num);
+                text.text = string.Format(name_format_str, GetRoomLevelName(level), num);
             }
             this.level = level;
             this.people_num = num;
+        }
+
+        public static string GetRoomLevelName(int level)
+        {
+            if (level < 1 || level > 9)
+            {
+                return "自由";
+            }
+            else
+            {
+                return DateFile.instance.SetColoer(20001 + level, DateFile.instance.massageDate[8001][1].Split('|')[level - 1]);
+            }
+
         }
     }
 

@@ -576,11 +576,6 @@ namespace GuiQuquAdventure // 聊天室
         public PlayerData[] player_data; //[300] 玩家数据
         public ChatData[] chat_data = new ChatData[0]; //[50] 聊天记录
 
-        public static int GetRoomNeedResource(int bet_typ, int bet_id, int level)
-        {
-            return level * 1000;
-            return 0;
-        }
     }
 
 
@@ -592,13 +587,55 @@ namespace GuiQuquAdventure // 聊天室
         public PlayerData[] player_data; //[12] 玩家数据 0是房主 1是挑战者 其他是游客
         public BattleData[] battle_data = new BattleData[0]; //[10] 最近十场战斗
         public ChatData[] chat_data = new ChatData[0]; //[50] 聊天记录
+
+        public int need_level { get { return idx / 10; } }
+
+        readonly static int[,] resource_worth = new int[9, 10]
+        {
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000, // 赌桌对资源:粮食的要求
+            },
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000,
+            },
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000,
+            },
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000,
+            },
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000,
+            },
+            {
+                10000,500,1000,2500,5000,9000,15000,25000,40000,80000,
+            },
+            {
+                10000,250,500,1250,2500,4500,7500,12500,20000,40000, // 赌桌对资源:威望的要求
+            },
+            {
+                10000,100,300,450,900,1250,1800,2450,3600,6400, // 赌桌对物品价值的要求
+            },
+            {
+                10000,200,350,550,800,1100,1400,2000,3000,5000, // 赌桌对人物身价的要求
+            },
+        };
+
+        public static int GetRoomNeedResource(int bet_typ, int bet_id, int level)
+        {
+            if(level<0|| level > 9)
+            {
+                level = 0;
+            }
+            return resource_worth[bet_id,level];
+        }
     }
 
     public class PlayerData // 玩家数据
     {
         public static PlayerData self;
-        public static int client_bet = 0; // 客户端押注的物品id
-        public static int[] client_ids = new int[] { -99, -99, -99 }; // 客户端玩家出战的蛐蛐
+        public static int client_bet = -98; // 客户端押注的物品id
+        public static int[] client_ids = new int[] { -98, -98, -98 }; // 客户端玩家出战的蛐蛐
         public string name; // 玩家名字
         public string ip; // ip地址
         public int observer; // -1是空 0非游客 1普通游客 2押注左边选手的游客 3押注右边选手的游客
@@ -619,6 +656,85 @@ namespace GuiQuquAdventure // 聊天室
             bet_id = -98;
             bet_typ = -1;
             bet = "0";
+        }
+
+        /// <summary>
+        /// 确认赌注是否适合该房间
+        /// </summary>
+        /// <returns></returns>
+        public static bool ChechBet(bool show_tips)
+        {
+            int desk_level = self.desk_idx / 100;
+            switch (PlayerData.self.bet_typ)
+            {
+                case 0:// 资源
+                    int need = DeskData.GetRoomNeedResource(self.bet_typ, self.bet_id, desk_level);
+                    int[] array = ActorMenu.instance.ActorResource(DateFile.instance.MianActorID());
+                    int has = array[self.bet_typ];
+                    if (need > has)
+                    {
+                        if (show_tips)
+                        {
+                            string name = DateFile.instance.resourceDate[self.bet_id][1];
+                            YesOrNoWindow.instance.SetYesOrNoWindow(-1, "赌注资源不足!", $"当前赌桌每场对赌需要{need}的{name},您当前拥有{has}的{name},不足以参加对赌,您可以更换赌注或者选择旁观!", false, true);
+                        }
+                        goto default;
+                    }
+                    break;
+                case 1:// 物品
+                    int need_worth = DeskData.GetRoomNeedResource(7, self.bet_id, desk_level);
+                    int item_worth = int.Parse(DateFile.instance.GetItemDate(PlayerData.client_bet, 904)); // 物品价值
+                    if (need_worth > item_worth)
+                    {
+                        if (show_tips)
+                        {
+                            YesOrNoWindow.instance.SetYesOrNoWindow(-1, "赌注物品太烂!", $"当前赌桌每场对赌需要价值{need_worth}以上的赌注,您当前赌注只值{item_worth},不足以参加对赌,您可以更换赌注或者选择旁观!", false, true);
+                        }
+                        goto default;
+                    }
+                    break;
+                case 2:// 人物
+                    int room_worth = DeskData.GetRoomNeedResource(8, self.bet_id, desk_level);
+                    int you_worth = int.Parse(DateFile.instance.GetItemDate(PlayerData.client_bet, 904)); // 物品价值
+                    if (room_worth > you_worth)
+                    {
+                        if (show_tips)
+                        {
+                            YesOrNoWindow.instance.SetYesOrNoWindow(-1, "赌注身价太低!", $"当前赌桌每场对赌需要身价{room_worth}以上的赌注,您当前赌注只值{you_worth},不足以参加对赌,您可以更换赌注或者选择旁观!", false, true);
+                        }
+                        goto default;
+                    }
+                    break;
+                default:
+                    self.desk_idx = -1;
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 确认出战蛐蛐是否可以进入该等级房间
+        /// </summary>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        public static bool CheckQuqu(int level)
+        {
+            if (level != 0)
+            {
+                for (int i = 0; i < client_ids.Length; i++)
+                {
+                    int id = client_ids[i];
+                    if (id > 0)
+                    {
+                        int lv = int.Parse(DateFile.instance.GetItemDate(id, 9));
+                        if(lv > level)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         public void SetBet()

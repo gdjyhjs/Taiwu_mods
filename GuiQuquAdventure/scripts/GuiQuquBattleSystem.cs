@@ -2292,7 +2292,7 @@ namespace GuiQuquAdventure
                 switch (betTyp)
                 {
                     case 0:
-                        UIDate.instance.ChangeResource(DateFile.instance.MianActorID(), betId, RoomData.GetRoomNeedResource(betTyp, betId, deskLevel), false);
+                        UIDate.instance.ChangeResource(DateFile.instance.MianActorID(), betId, DeskData.GetRoomNeedResource(betTyp, betId, deskLevel), false);
                         break;
                     case 1:
                         if (DateFile.instance.presetitemDate.ContainsKey(betId)&& DateFile.instance.presetitemDate[betId][6] == "1")
@@ -2310,13 +2310,13 @@ namespace GuiQuquAdventure
 
                 }
             } // 失败 失去奖励
-            else
+            else if(heihei == 1)
             {
                 PlayerData.GetBattleAttr(observer_battleFlag, 30, out int betId, out int betTyp, out ActorTyp actorTyp, out int deskTyp, out int deskLevel);
                 switch (betTyp)
                 {
                     case 0:
-                        UIDate.instance.ChangeResource(DateFile.instance.MianActorID(), betId, - RoomData.GetRoomNeedResource(betTyp, betId, deskLevel), false);
+                        UIDate.instance.ChangeResource(DateFile.instance.MianActorID(), betId, -DeskData.GetRoomNeedResource(betTyp, betId, deskLevel), false);
                         break;
                     case 1:
                         DateFile.instance.LoseItem(DateFile.instance.MianActorID(), PlayerData.client_bet, 1, true);
@@ -2326,6 +2326,7 @@ namespace GuiQuquAdventure
                         break;
 
                 }
+                QuquHall.instance.OnLose();
             }
 
 
