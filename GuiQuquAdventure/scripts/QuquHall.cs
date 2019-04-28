@@ -583,8 +583,9 @@ namespace GuiQuquAdventure
         string s3 = "true";
         void OnGUI()
         {
-            s1 = GUI.TextField(new Rect(10, 60, 40, 125), s1);
-            s2 = GUI.TextField(new Rect(10, 110, 40, 125), s2);
+            s1 = GUI.TextField(new Rect(10, 60, 140, 25), s1);
+            s2 = GUI.TextField(new Rect(10, 110, 140, 25), s2);
+            s3 = GUI.TextField(new Rect(10, 160, 40, 25), s3);
             if (GUI.Button(new Rect(10, 10, 40, 25), "对战"))
             {
 
