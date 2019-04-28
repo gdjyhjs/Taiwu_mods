@@ -61,10 +61,19 @@ namespace GuiQuquAdventure
             {
                 if (i < players.Length)
                 {
-                    players[i].SetData(playerDats[i]);
+                    PlayerData player = playerDats[i];
+                    players[i].SetData(player);
                     if(playerDats[i].ip == self.ip)
                     {
                         my_idx = i;
+                    }
+                    if (i < 2)
+                    {
+                        string bet = player.bet;
+                        player.SetBetIdAndTyp(i + 1);
+                        int bet_typ = player.bet_typ;
+                        int bet_id = player.bet_id;
+                        QuquHall.instance.SetBetUI(i, bet_typ, bet_id);
                     }
                 }
             }

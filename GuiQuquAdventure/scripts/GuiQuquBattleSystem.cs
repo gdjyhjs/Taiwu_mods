@@ -1347,7 +1347,8 @@ namespace GuiQuquAdventure
                 component.enabled = false;
                 gameObject.transform.Find("ItemNumberText").GetComponent<Text>().text = DateFile.instance.resourceDate[i][1];
                 GameObject gameObject2 = gameObject.transform.Find("ItemIcon").gameObject;
-                gameObject2.name = "ChooseResourceButton,652";
+                gameObject2.tag = "ResourceIcon"; // 金钱
+                gameObject2.name = "ResourceIcon" + i;
                 gameObject2.GetComponent<Image>().sprite = GetSprites.instance.makeResourceIcon[DateFile.instance.ParseInt(DateFile.instance.resourceDate[i][98])];
 
                 // 物品点击

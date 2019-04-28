@@ -70,7 +70,7 @@ namespace GuiQuquAdventure
         {
             if (level < 1 || level > 9)
             {
-                return "自由";
+                return DateFile.instance.SetColoer(20001, "自由");
             }
             else
             {

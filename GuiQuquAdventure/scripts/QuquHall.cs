@@ -10,7 +10,7 @@ namespace GuiQuquAdventure
     {
         public static QuquHall instance;
         float next_auto_send_time = 0;
-        float auto_send_interval = 1;
+        float auto_send_interval = 10;
         DataFile dataFile;
         GameObject all;
         GameObject hall;
@@ -18,15 +18,6 @@ namespace GuiQuquAdventure
         GameObject desk;
         RoomObj[] rooms;
         RoomDeskObj[] desks;
-        Transform tCloseBtn;
-        Button bCloseBtn;
-        Text tCloaseBtn;
-        Transform tfBet;
-        Image iBet;
-        Text tBet;
-        Transform[] tfQuqu;
-        Image[] iQuqus;
-        Text[] tQuqus;
         Text tBattleDeskName;
         Text tTitle;
         GameObject chat;
@@ -42,11 +33,16 @@ namespace GuiQuquAdventure
         PlayerData self;
         Text tPeopleNum;
 
-        Image actorBodyImage;
-        Text actorBodyNameText;
+        Image[] actorBodyImage;
+        Text[] actorBodyNameText;
         Text[] actorQuquName;
         Text[] actorQuquHpText;
         Image[] actorQuquIcon;
+
+        GameObject go_close;
+        GameObject[] go_ququs;
+        GameObject[] go_bet;
+
 
 
         void Awake()
@@ -90,39 +86,6 @@ namespace GuiQuquAdventure
             desk = battle_desk.gameObject;
             ququDesk = desk.AddComponent<QuquDesk>();
 
-            tCloseBtn = battle_desk.Find("all/CloseButton");
-            bCloseBtn = transform.Find("all/CloseButton").GetComponent<Button>();
-            //bCloseBtn.onClick.AddListener(OnClickClose);
-            bCloseBtn.enabled = false;
-            foreach (var item in bCloseBtn.GetComponentsInChildren<Graphic>())
-            {
-                item.raycastTarget = false;
-            }
-
-
-
-            tCloaseBtn = transform.Find("all/CloseButton/Text").GetComponent<Text>();
-            tfBet = transform.Find("all/bet");
-            iBet = transform.Find("all/bet").GetComponent<Image>();
-            iBet.enabled = false;
-            tBet = transform.Find("all/bet/Text").GetComponent<Text>();
-            tBet.enabled = false;
-            iQuqus = new Image[3];
-            tQuqus = new Text[3];
-            tfQuqu = new Transform[3];
-            for (int i = 0; i < 3; i++)
-            {
-                Transform child = transform.Find("all/ququ" + (i + 1));
-                tfQuqu[i] = child;
-                iQuqus[i] = child.GetComponent<Image>();
-                iQuqus[i].enabled = false;
-                tQuqus[i] = child.GetComponentInChildren<Text>();
-                tQuqus[i].enabled = false;
-                //Button btn = child.GetComponent<Button>();
-                //btn.onClick.AddListener(delegate { OnClickQuqu(i); });
-            }
-            //Button bBet = iBet.GetComponent<Button>();
-            //bBet.onClick.AddListener(OnClickBet);
 
             tBattleDeskName = battle_desk.Find("Text").GetComponent<Text>();
             tTitle = transform.Find("all/Text").GetComponent<Text>();
@@ -219,96 +182,145 @@ namespace GuiQuquAdventure
 
         void InitBetAndQuqu()
         {
-            Main.Logger.Log("初始化赌注和蛐蛐");
-            GameObject bet_sample = GuiQuquBattleSystem.instance.transform.Find("BattleActorBack/ActorBattleBodyNameBack/BattleBodyBack/BodyItemBack").gameObject;
-            GameObject bet = Instantiate(bet_sample);
-            Transform tf_bet = bet.transform;
-            actorBodyImage = tf_bet.Find("ActorBodyItem").GetComponent<Image>();
-            actorBodyNameText = tf_bet.Find("ItemNameBack/ItemNameText").GetComponent<Text>();
-            tf_bet.SetParent(tfBet, false);
-            ((RectTransform)tf_bet).anchoredPosition = new Vector2(-1100, 20);
-            Vector2[] pos = new Vector2[]
-            {
-                new Vector2(-200,-10),
-                new Vector2(-100,-10),
-                new Vector2(0,-10),
-            };
+            t = new RectTransform[8];
+
+
+
+            actorBodyImage = new Image[3];
+            actorBodyNameText = new Text[3];
+            go_ququs = new GameObject[3];
+            go_bet = new GameObject[3];
             actorQuquName = new Text[3];
             actorQuquHpText = new Text[3];
             actorQuquIcon = new Image[3];
+
+            DateFile.instance.massageDate.Add(1556454951, new Dictionary<int, string>() { { 0, "设置蛐蛐和押注" }, { 1, "选择符合要求的蛐蛐和押注作为赛注..." } });
+            DateFile.instance.massageDate.Add(1556454952, new Dictionary<int, string>() { { 0, "隐藏蛐蛐竞技场" }, { 1, "隐藏蛐蛐竞技场，也可以使用快捷键F1打开或者隐藏..." } });
+            DateFile.instance.massageDate.Add(1556454953, new Dictionary<int, string>() { { 0, "退出房间" }, { 1, "退出房间，返回到大厅中，将不计为在线人数..." } });
+            DateFile.instance.massageDate.Add(1556454954, new Dictionary<int, string>() { { 0, "退出赌桌" }, { 1, "退出赌桌，可以选择其他赌桌进行游戏，或者设置赌注和出战蛐蛐..." } });
+            DateFile.instance.massageDate.Add(1556454955, new Dictionary<int, string>() { { 0, "押注" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的赌桌要求押注的价值不同..." } });
+            DateFile.instance.massageDate.Add(1556454956, new Dictionary<int, string>() { { 0, "出战蛐蛐" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的房间要求蛐蛐不能超过的等级不同..." } });
+
+            Main.Logger.Log("初始化赌注和蛐蛐");
+
+            GameObject bet_sample = GuiQuquBattleSystem.instance.transform.Find("BattleActorBack/ActorBattleBodyNameBack/BattleBodyBack/BodyItemBack").gameObject;
+            GameObject bet = Instantiate(bet_sample);
+            go_bet[2] = bet;
+            Transform tf_bet = bet.transform;
+            actorBodyImage[2] = tf_bet.Find("ActorBodyItem").GetComponent<Image>();
+            actorBodyNameText[2] = tf_bet.Find("ItemNameBack/ItemNameText").GetComponent<Text>();
+            tf_bet.SetParent(transform.Find("all/set"), false);
+            ((RectTransform)tf_bet).anchoredPosition = new Vector2(1530, -80);
+            Main.Logger.Log("初始化赌注和蛐蛐");
+
+            Vector2[] pos = new Vector2[]
+            {
+                new Vector2(25,-25),
+                new Vector2(175,-75),
+                new Vector2(325,175),
+
+            };
+            Main.Logger.Log("初始化赌注和蛐蛐");
             for (int i = 0; i < 3; i++)
             {
+                Main.Logger.Log("初始化赌注和蛐蛐"+i);
                 GameObject ququ_sample = GuiQuquBattleSystem.instance.transform.Find($"QuquBattleBack/QuquBattleHolder/QuquBattle{i + 1}/ActorBattleQuqu{i + 1}").gameObject;
                 GameObject ququ = Instantiate(ququ_sample);
+                go_ququs[i] = ququ;
+                ququ.name = ququ_sample.name;
                 Transform tf_ququ = ququ.transform;
                 actorQuquName[i] = tf_ququ.Find($"ActorQuquNameBack{i + 1}/ActorQuquNameText{i + 1}").GetComponent<Text>();
                 actorQuquHpText[i] = tf_ququ.Find($"ActorQuqu{i + 1}/ActorQuquHpText{i + 1}").GetComponent<Text>();
                 actorQuquIcon[i] = tf_ququ.Find($"ActorQuqu{i + 1}/ActorQuquItem{i + 1}").GetComponent<Image>();
-                tf_ququ.SetParent(tfQuqu[i], false);
-
-
+                tf_ququ.SetParent(transform.Find("all/ququ" + (i + 1)), false);
+                ((RectTransform)tf_ququ).anchoredPosition = pos[i];
+                Main.Logger.Log("初始化赌注和蛐蛐"+i);
+                Text[] ts = ququ.GetComponentsInChildren<Text>();
+                string[] ss = DateFile.instance.massageDate[8001][3].Split('|');
+                foreach (var item in ts)
+                {
+                    if (item.text != ss[2] && item.text != ss[3] && item.text != ss[4])
+                        item.text = "";
+                }
+                Main.Logger.Log("初始化赌注和蛐蛐"+i);
             }
 
-            UpdateBetAndQuqu();
 
-
+            Main.Logger.Log("初始化赌注和蛐蛐");
 
             // 关闭按钮
-            GameObject go_close = Instantiate(GuiQuquBattleSystem.instance.loseBattleButton.gameObject);
+            go_close = Instantiate(GuiQuquBattleSystem.instance.loseBattleButton.gameObject);
+            //go_close.name = GuiQuquBattleSystem.instance.loseBattleButton.name;
+            go_close.name = "1556454952,1556454952";
+            go_close.SetActive(true);
             Transform tf_close = go_close.transform;
             go_close.GetComponent<Button>().onClick.AddListener(OnClickClose);
-            tf_close.SetParent(tCloseBtn, false);
-            ((RectTransform)tf_close).anchoredPosition = new Vector2(100, 20);
+            tf_close.SetParent(transform.Find("all/close"), false);
+            ((RectTransform)tf_close).anchoredPosition = new Vector2(20, -20);
 
+            Main.Logger.Log("初始化赌注和蛐蛐");
             // 设置按钮
             GameObject go_set = Instantiate(GuiQuquBattleSystem.instance.startBattleButton.gameObject);
+            //go_set.name = GuiQuquBattleSystem.instance.startBattleButton.name;
+            go_set.name = "1556454951,1556454951";
+            go_set.SetActive(true);
             Transform tf_set = go_set.transform;
             go_set.GetComponent<Button>().onClick.AddListener(SetQuquAndBet);
-            tf_set.SetParent(tCloseBtn, false);
-            ((RectTransform)tf_set).anchoredPosition = new Vector2(300, 20);
+            tf_set.SetParent(transform.Find("all/set"), false);
+            ((RectTransform)tf_set).anchoredPosition = new Vector2(1400, 20);
 
-            t1 = tf_close as RectTransform;
-            t2 = tf_set as RectTransform;
+            t[3] = tf_bet as RectTransform;
+            t[4] = tf_close as RectTransform;
+            t[5] = tf_set as RectTransform;
+
+            Main.Logger.Log("初始化赌注和蛐蛐");
+
+            GameObject left_bet = Instantiate(bet_sample);
+            go_bet[0] = left_bet;
+            Transform tf_left_bet = left_bet.transform;
+            actorBodyImage[0] = tf_left_bet.Find("ActorBodyItem").GetComponent<Image>();
+            actorBodyNameText[0] = tf_left_bet.Find("ItemNameBack/ItemNameText").GetComponent<Text>();
+            tf_left_bet.SetParent(transform.Find("all/Desk/left_bet"), false);
+            ((RectTransform)tf_left_bet).anchoredPosition = new Vector2(250, -100);
+
+            Main.Logger.Log("初始化赌注和蛐蛐");
+
+            GameObject right_bet = Instantiate(bet_sample);
+            go_bet[1] = right_bet;
+            Transform tf_right_bet = right_bet.transform;
+            actorBodyImage[1] = tf_right_bet.Find("ActorBodyItem").GetComponent<Image>();
+            actorBodyNameText[1] = tf_right_bet.Find("ItemNameBack/ItemNameText").GetComponent<Text>();
+            tf_right_bet.SetParent(transform.Find("all/Desk/right_bet"), false);
+            ((RectTransform)tf_right_bet).anchoredPosition = new Vector2(-250, -100);
+
+            Main.Logger.Log("初始化赌注和蛐蛐");
+
+            t[6] = tf_left_bet as RectTransform;
+            t[7] = tf_right_bet as RectTransform;
+
+
+            UpdateBetAndQuqu();
         }
 
 
         public void UpdateBetAndQuqu()
         {
+            Main.Logger.Log("更新赌注和蛐蛐");
+
             int bet_typ = PlayerData.self.bet_typ;
             int bet_id = PlayerData.self.bet_id;
-            switch (bet_typ)
-            {
-                case 0:
-                    actorBodyImage.tag = "ResourceIcon"; // 金钱
-                    actorBodyImage.name = "ResourceIcon," + bet_id;
-                    actorBodyImage.sprite = GetSprites.instance.makeResourceIcon[DateFile.instance.ParseInt(DateFile.instance.resourceDate[bet_id][98])];
-                    actorBodyNameText.text = DateFile.instance.resourceDate[bet_id][1];
-                    break;
-                case 1:
-                    actorBodyImage.tag = "ActorItem"; // 物品
-                    actorBodyImage.name = "ActorItemIcon," + bet_id;
-                    actorBodyImage.GetComponent<Image>().sprite = GetSprites.instance.itemSprites[DateFile.instance.ParseInt(DateFile.instance.GetItemDate(bet_id, 98))];
-                    actorBodyNameText.text = DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(bet_id, 8)), DateFile.instance.GetItemDate(bet_id, 0));
-                    break;
-                case 2:
-                    actorBodyImage.tag = "ShopBootyActor"; // 人
-                    actorBodyImage.name = $"ActorIcon,{bet_id},{GuiRandom.Range(0, ActorMenu.instance.GetActorTalk(bet_id).Count)},{-999}";
-                    actorBodyImage.GetComponent<Image>().sprite = GetSprites.instance.attSprites[0];
-                    actorBodyNameText.text = DateFile.instance.SetColoer(10003, DateFile.instance.GetActorName(bet_id));
-                    break;
-                default:
-                    bet_id = -98;
-                    actorBodyImage.tag = "ActorItem";
-                    actorBodyImage.name = "ActorItemIcon," + bet_id;
-                    actorBodyImage.sprite = GuiQuquBattleSystem.instance.GetItemIcon(bet_id);
-                    actorBodyNameText.text = DateFile.instance.massageDate[8001][5].Split('|')[0];
-                    break;
-            }
+            Main.Logger.Log("更新赌注和蛐蛐");
+            SetBetUI(2, bet_typ, bet_id);
+            Main.Logger.Log("更新赌注和蛐蛐");
 
             for (int i = 0; i < 3; i++)
             {
-                int ququ_id = PlayerData.client_ids[i]; if (ququ_id >= 0)
+                Main.Logger.Log("更新赌注和蛐蛐"+i);
+                int ququ_id = PlayerData.client_ids[i];
+                actorQuquIcon[i].name = "ActorQuqu," + ququ_id;
+                if (ququ_id > 0)
                 {
+                    actorQuquName[i].tag = "ActorItem";
                     actorQuquName[i].text = DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(ququ_id, 8)), DateFile.instance.GetItemDate(ququ_id, 0));
                     int num = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(ququ_id, 901));
                     int num2 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(ququ_id, 902));
@@ -316,10 +328,47 @@ namespace GuiQuquAdventure
                 }
                 else
                 {
-                    actorQuquName[i].text = "";
+                    actorQuquName[i].tag = go_close.tag;
+                    actorQuquName[i].text = "无出战蛐蛐";
                     actorQuquHpText[i].text = "";
+                    actorQuquIcon[i].name = "1556454956,1556454956";
                 }
                 actorQuquIcon[i].sprite = ((ququ_id < 0) ? GetSprites.instance.itemSprites[0] : DateFile.instance.GetCricketImage(ququ_id));
+
+                Main.Logger.Log("更新赌注和蛐蛐" + i);
+            }
+        }
+
+        public void SetBetUI(int idx,int bet_typ,int bet_id)
+        {
+            Main.Logger.Log("设置赌注ui");
+            switch (bet_typ)
+            {
+                case 0:
+                    actorBodyImage[idx].tag = "ResourceIcon"; // 金钱
+                    actorBodyImage[idx].name = "ResourceIcon," + bet_id;
+                    actorBodyImage[idx].sprite = GetSprites.instance.makeResourceIcon[DateFile.instance.ParseInt(DateFile.instance.resourceDate[bet_id][98])];
+                    actorBodyNameText[idx].text = DateFile.instance.resourceDate[bet_id][1];
+                    break;
+                case 1:
+                    actorBodyImage[idx].tag = "ActorItem"; // 物品
+                    actorBodyImage[idx].name = "ActorItemIcon," + bet_id;
+                    actorBodyImage[idx].GetComponent<Image>().sprite = GetSprites.instance.itemSprites[DateFile.instance.ParseInt(DateFile.instance.GetItemDate(bet_id, 98))];
+                    actorBodyNameText[idx].text = DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(bet_id, 8)), DateFile.instance.GetItemDate(bet_id, 0));
+                    break;
+                case 2:
+                    actorBodyImage[idx].tag = "ShopBootyActor"; // 人
+                    actorBodyImage[idx].name = $"ActorIcon,{bet_id},{GuiRandom.Range(0, ActorMenu.instance.GetActorTalk(bet_id).Count)},{-999}";
+                    actorBodyImage[idx].GetComponent<Image>().sprite = GetSprites.instance.attSprites[0];
+                    actorBodyNameText[idx].text = DateFile.instance.SetColoer(10003, DateFile.instance.GetActorName(bet_id));
+                    break;
+                default:
+                    bet_id = -98;
+                    actorBodyImage[idx].tag = go_close.tag;
+                    actorBodyImage[idx].name = "1556454955,1556454955";
+                    actorBodyImage[idx].sprite = GuiQuquBattleSystem.instance.GetItemIcon(bet_id);
+                    actorBodyNameText[idx].text = DateFile.instance.massageDate[8001][5].Split('|')[0];
+                    break;
             }
         }
 
@@ -376,7 +425,7 @@ namespace GuiQuquAdventure
             {
                 next_chat_time = Time.time + chat_time;
                 inputField.text = "";
-                content.Replace('|', '｜');
+                content = content.Replace('|', '｜');
                 GetData(content, "");
             }
         }
@@ -459,8 +508,8 @@ namespace GuiQuquAdventure
                         this.desk.SetActive(false);
                         this.chat.SetActive(false);
                         this.people.SetActive(false);
-                        tCloaseBtn.text = "关闭";
                         tTitle.text = self.name + " 大厅";
+                        go_close.name = "1556454952,1556454952";
                     }
                     for (int i = 0; i < roomdata.Length; i++)
                     {
@@ -475,6 +524,7 @@ namespace GuiQuquAdventure
                 {
                     SetPeopleNum();
                 }
+                UpdateBetAndQuqu();
             }
             else
             {
@@ -498,8 +548,8 @@ namespace GuiQuquAdventure
                         this.desk.SetActive(false);
                         this.chat.SetActive(true);
                         this.people.SetActive(true);
-                        tCloaseBtn.text = "返回";
                         tTitle.text = $"{self.name} 大厅>{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>";
+                        go_close.name = "1556454953,1556454953";
                     }
                     for (int i = 0; i < roomdata.desk_mark.Length; i++)
                     {
@@ -520,6 +570,7 @@ namespace GuiQuquAdventure
                 {
                     tPeopleNum.text = "返回房间";
                 }
+                UpdateBetAndQuqu();
             }
             else
             {
@@ -543,21 +594,10 @@ namespace GuiQuquAdventure
                         this.desk.SetActive(true);
                         this.chat.SetActive(true);
                         this.people.SetActive(false);
-                        tCloaseBtn.text = "退出";
                         int desk_level = self.desk_idx / 10;
                         tBattleDeskName.text = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
                         tTitle.text = $"{self.name} 大厅>{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
-                    }
-
-                    if (battle_flag != "0") // 触发战斗
-                    {
-                        Main.Logger.Log("触发战斗");
-                        self.ready = 0; // 准备战斗恢复为未准备
-                        if(self.observer > 1)
-                        {
-                            self.observer = 1; // 押注观战恢复为普通观战
-                        }
-                        PlayBattle(battle_flag);
+                        go_close.name = "1556454954,1556454954";
                     }
 
                     // 聊天
@@ -566,10 +606,32 @@ namespace GuiQuquAdventure
 
                     // 对战桌
                     ququDesk.SetData(deskData);
-                }else if (!all.activeSelf)
-                {
-                    tPeopleNum.text = "返回比赛";
+
+
+
+                    if (!int.TryParse(battle_flag, out int tmp)) // 触发战斗
+                    {
+                        Main.Logger.Log("触发战斗");
+                        self.ready = 0; // 准备战斗恢复为未准备
+                        if (self.observer > 1)
+                        {
+                            self.observer = 1; // 押注观战恢复为普通观战
+                        }
+                        PlayBattle(battle_flag);
+                    }
+                    else
+                    {
+                        Main.Logger.Log("不触发战斗");
+                    }
+
+
                 }
+                else if (!all.activeSelf)
+                {
+                    tPeopleNum.text = "返回赌桌";
+                }
+                UpdateBetAndQuqu();
+                //OnLose();
             }
             else
             {
@@ -618,13 +680,13 @@ namespace GuiQuquAdventure
             GuiQuquBattleSystem.instance.CloseQuquBattleWindow();
         }
 
-        string s1 = "";
-        string s2 = "";
+        string s1 = "1｜650002｜999#650002#902#4#901#3#33#1*1*1*1*1*1*1*1*1*0｜";
+        string s2 = "1｜650002｜999#650002#902#4#901#3#33#1*1*1*1*1*1*1*1*1*0｜｜9｜0｜1";
         string s3 = "true";
-        string x = "";
-        string y = "";
-        RectTransform t1;
-        RectTransform t2;
+        string x = "0";
+        string y = "0";
+        string s = "1";
+        RectTransform[] t;
         void OnGUI()
         {
             s1 = GUI.TextField(new Rect(10, 60, 140, 25), s1);
@@ -632,11 +694,11 @@ namespace GuiQuquAdventure
             s3 = GUI.TextField(new Rect(10, 160, 40, 25), s3);
             x = GUI.TextField(new Rect(10, 210, 40, 25), x);
             y = GUI.TextField(new Rect(10, 260, 40, 25), y);
+            s = GUI.TextField(new Rect(10, 310, 40, 25), s);
             if (GUI.Button(new Rect(10, 10, 40, 25), "对战"))
             {
 
                 // 初始化测试数据
-                int battleFlag = 7707090;
                 BattleData battleData = new BattleData();
                 battleData.battleFlag = s2;
                 battleData.time_stamp = 111;
@@ -649,7 +711,7 @@ namespace GuiQuquAdventure
                     data.name = "晴华" + i;
                     data.ip = "113.66.219.135";
                     data.observer = 0;
-                    data.ququ = new string[] { "101#3001#0｜12", "101#3001#0｜12", "101#3001#0｜12" };
+                    data.ququ = new string[] { "105#0#0*11", "232#3015#0", "203#3004#0" };
                     data.time_stamp = 1556171873270;
                     data.ready = 0;
                     data.level = -1;
@@ -672,13 +734,13 @@ namespace GuiQuquAdventure
                 }
             }
 
-            if(GUI.Button(new Rect(60, 10, 40, 25),"close"))
+            for (int i = 0; i < t.Length; i++)
             {
-                t1.anchoredPosition = new Vector2(float.Parse(x), float.Parse(y));
-            }
-            if (GUI.Button(new Rect(110, 10, 40, 25), "set"))
-            {
-                t2.anchoredPosition = new Vector2(float.Parse(x), float.Parse(y));
+                if (GUI.Button(new Rect(60+60*i, 10, 40, 25), "t"+i))
+                {
+                    t[i].anchoredPosition = new Vector2(float.Parse(x), float.Parse(y));
+                    t[i].localScale = Vector3.one * float.Parse(s);
+                }
             }
         }
 
@@ -720,7 +782,7 @@ namespace GuiQuquAdventure
             SetQuquAndBet();
             if (!PlayerData.ChechBet(false) && self.observer == 0)
             {
-                YesOrNoWindow.instance.SetYesOrNoWindow(-1, "失去赌注!", "由于您失去了赌注,已将您踢出了比赛,请重新选择赌注参赛吧!", false, true);
+                YesOrNoWindow.instance.SetYesOrNoWindow(-1, "失去赌注或蛐蛐!", "由于您失去了赌注或蛐蛐!已将您踢出了比赛,请重新选择赌注参赛吧!", false, true);
                 self.desk_idx = -1;
                 GetData();
             }

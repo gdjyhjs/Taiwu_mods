@@ -29,6 +29,7 @@ namespace GuiQuquAdventure
 
         public void SetDataForMark(int desk_idx, int mark)
         {
+            Main.Logger.Log("赌桌idx=" + desk_idx);
             for (int i = 0; i < chairs.Length; i++)
             {
                 int bit = 1 << i;
@@ -36,11 +37,12 @@ namespace GuiQuquAdventure
             }
             typ = (mark & (1 << chairs.Length)) > 0 ? 1 : 0;
             string des = "";
-            int desk_level = desk_idx / 100;
+            int desk_level = desk_idx / 10;
+            Main.Logger.Log("赌桌等级=" + desk_level);
             switch (PlayerData.self.bet_typ)
             {
                 case 0:
-                    des = $"每次需要{DeskData.GetRoomNeedResource(0, PlayerData.self.bet_id, desk_level)}{DateFile.instance.resourceDate[PlayerData.self.bet_id][1]}!";
+                    des = $"每次需要{DeskData.GetRoomNeedResource(PlayerData.self.bet_id, PlayerData.self.bet_id, desk_level)}{DateFile.instance.resourceDate[PlayerData.self.bet_id][1]}!";
                     break;
                 case 1:
                     des = $"物品价值至少{DeskData.GetRoomNeedResource(7, PlayerData.self.bet_id, desk_level)}!";
@@ -49,6 +51,7 @@ namespace GuiQuquAdventure
                     des = $"人物身价至少{DeskData.GetRoomNeedResource(8, PlayerData.self.bet_id, desk_level)}!";
                     break;
                 default:
+                    des = $"物品价值至少{DeskData.GetRoomNeedResource(7, PlayerData.self.bet_id, desk_level)}!";
                     break;
             }
 
@@ -59,7 +62,7 @@ namespace GuiQuquAdventure
         {
             if(desk_level < 1 || desk_level > 9)
             {
-                return "自由";
+                return DateFile.instance.SetColoer(20001, "自由");
             }
             else
             {
