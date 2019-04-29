@@ -12,6 +12,7 @@ namespace GuiQuquAdventure
         int pos;
         //Transform tImage;
         //GameObject gImage;
+        int[] last_image = new int[20];
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
@@ -25,10 +26,11 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
             GameObject go = GameObject.Instantiate(Tools.GetActorFaceSample());
             actorFace = go.GetComponent<ActorFace>();
+            Tools.UpdateFace(last_image, actorFace, 0, 0, 0, new int[] { 3102 }, new int[] { 3102 }, 0, true);
 
             RectTransform tf = (RectTransform)go.transform;
             tf.SetParent(transform, false);
-            tf.localScale = Vector3.one * 0.1f;
+            tf.localScale = Vector3.one * 0.25f;
             tf.anchoredPosition = new Vector2(0, -14);
 #endif
         }
@@ -54,18 +56,19 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
                 if (null != playerData && playerData.ip != "0")
                 {
-                    Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
+                    Tools.UpdateFace(last_image,actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
                 }
                 else
                 {
-                    Tools.UpdateFace(actorFace, 0, 0, 0, new int[] { 0 }, new int[] { 0 }, 0, true);
+                    Tools.UpdateFace(last_image, actorFace, 0, 0, 0, new int[] { 3102 }, new int[] { 3102 }, 0, true);
                 }
 #endif
             }
             else
             {
 #if !TAIWU_GAME
-                actorFace.UpdateFace(0, 0, 0, 0, new int[] { 0 }, null, 0);
+                // 3102是侠士 3101是外道
+                actorFace.UpdateFace(0, 0, 0, 0, new int[] { 3102 }, null, 0);
 #endif
 
             }
@@ -79,8 +82,7 @@ namespace GuiQuquAdventure
                 PlayerData.self.desk_idx = desk_id;
                 PlayerData.self.ready = 0;
                 PlayerData.self.observer = pos < 2 ? 0 : 1;
-                DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].chat_data = new ChatData[0]; // 清空要进入的房间的聊天记录
-                DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].battle_data = new BattleData[0]; // 清空要进入的房间的聊天记录
+                //DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].chat_data = new List<ChatData>(); // 清空要进入的房间的聊天记录
                 QuquHall.instance.GetData();
             }
             else

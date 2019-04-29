@@ -9,12 +9,12 @@ namespace GuiQuquAdventure
     public class QuquDesk : MonoBehaviour
     {
 
-        readonly static string[] ready_state_str = new string[]
-        {
-            "确认",
-            "准备",
-            "取消",
-        };
+        //readonly static string[] ready_state_str = new string[]
+        //{
+        //    "确认",
+        //    "准备",
+        //    "取消",
+        //};
 
 
         public static QuquDesk instance;
@@ -26,8 +26,8 @@ namespace GuiQuquAdventure
         int last_t;
         DeskData data;
         PlayerObj[] players;
-        Text tLeftBtn;
-        Text tRightBtn;
+        Image tLeftImage;
+        Image tRightImage;
         Button bLeftBtn;
         Button bRightBtn;
         GameObject leftBtn;
@@ -50,14 +50,18 @@ namespace GuiQuquAdventure
                 Transform child = player_root.GetChild(i);
                 players[i] = child.gameObject.AddComponent<PlayerObj>();
             }
-            tLeftBtn = transform.Find("LeftButton/Text").GetComponent<Text>();
-            tRightBtn = transform.Find("RightButton/Text").GetComponent<Text>();
+            Text tLeftBtn = transform.Find("LeftButton/Text").GetComponent<Text>();
+            tLeftBtn.text = "";
+            Text tRightBtn = transform.Find("RightButton/Text").GetComponent<Text>();
+            tRightBtn.text = "";
             bLeftBtn = transform.Find("LeftButton").GetComponent<Button>();
             bRightBtn = transform.Find("RightButton").GetComponent<Button>();
             bLeftBtn.onClick.AddListener(delegate { OnClickReady(0); });
             bRightBtn.onClick.AddListener(delegate { OnClickReady(1); });
             leftBtn = bLeftBtn.gameObject;
             rightBtn = bRightBtn.gameObject;
+            tLeftImage = bLeftBtn.GetComponent<Image>();
+            tRightImage = bRightBtn.GetComponent<Image>();
         }
 
         public void SetData(DeskData data)
@@ -90,48 +94,53 @@ namespace GuiQuquAdventure
             {
                 GameObject showBtn;
                 GameObject hideBtn;
-                Text tBtn;
+                Image tImg;
                 if (my_idx == 0)  // 在左边
                 {
                     showBtn = leftBtn;
                     hideBtn = rightBtn;
-                    tBtn = tLeftBtn;
+                    tImg = tLeftImage;
                 }
                 else // 在右边
                 {
                     showBtn = rightBtn;
                     hideBtn = leftBtn;
-                    tBtn = tRightBtn;
+                    tImg = tRightImage;
                 }
                 hideBtn.SetActive(false);
                 showBtn.SetActive(true);
-                tBtn.text = ready_state_str[self.ready];
+                tImg.sprite = self.ready == 2 ? QuquHall.instance.sprite_x : QuquHall.instance.sprite_o;
+                //tBtn.text = ready_state_str[self.ready];
             }
             else // 观众
             {
                 if (self.observer == 2) // 押1号选手
                 {
                     leftBtn.SetActive(true);
-                    tLeftBtn.text = "取消押注";
+                    //tLeftBtn.text = "取消押注";
+                    tLeftImage.sprite =QuquHall.instance.sprite_x;
                 }
                 else
                 {
                     leftBtn.SetActive(true);
                     PlayerData sel = GetPlayer(0);
-                    string bet_player_name = "押他";
-                    tLeftBtn.text = bet_player_name;
+                    //string bet_player_name = "押他";
+                    //tLeftBtn.text = bet_player_name;
+                    tLeftImage.sprite = QuquHall.instance.sprite_o;
                 }
                 if (self.observer == 3) // 押1号选手
                 {
                     rightBtn.SetActive(true);
-                    tRightBtn.text = "取消押注";
+                    //tRightBtn.text = "取消押注";
+                    tRightImage.sprite = QuquHall.instance.sprite_x;
                 }
                 else
                 {
                     rightBtn.SetActive(true);
                     PlayerData sel = GetPlayer(1);
-                    string bet_player_name = "押他";
-                    tRightBtn.text = bet_player_name;
+                    //string bet_player_name = "押他";
+                    //tRightBtn.text = bet_player_name;
+                    tRightImage.sprite = QuquHall.instance.sprite_o;
                 }
             }
         }

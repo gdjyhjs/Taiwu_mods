@@ -16,6 +16,7 @@ namespace GuiQuquAdventure
         Shadow shadow;
         //Transform tImage;
         //GameObject gImage;
+        int[] last_image = new int[20];
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
@@ -113,11 +114,11 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
             if(null!= playerData && playerData.ip != "0")
             {
-                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
+                Tools.UpdateFace(last_image,actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
             }
             else
             {
-                Tools.UpdateFace(actorFace, 0, 0, 0, new int[] { 0 }, new int[] { 0 }, 0, true);
+                Tools.UpdateFace(last_image, actorFace, 0, 0, 0, new int[] { 3102 }, new int[] { 3102 }, 0, true);
             }
 #endif
         }

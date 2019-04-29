@@ -61,10 +61,13 @@ namespace GuiQuquAdventure
         }
 #endif
 
-        public static void UpdateFace(ActorFace actorFace, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = false)
+        public static void UpdateFace(int[] last_image, ActorFace actorFace, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = true)
         {
+            if (!CheckImageChange(last_image, faceDate.Length, age, gender, actorGenderChange, faceDate, faceColor, clotheIndex))
+                return;
             if (faceDate.Length == 1)
             {
+
                 actorFace.ageImage.gameObject.SetActive(value: false);
                 actorFace.nose.gameObject.SetActive(value: false);
                 actorFace.faceOther.gameObject.SetActive(value: false);
@@ -91,6 +94,7 @@ namespace GuiQuquAdventure
             }
             else
             {
+
                 bool flag = life || false || false;
                 if (!flag)
                 {
@@ -251,6 +255,65 @@ namespace GuiQuquAdventure
                     }
                 }
             }
+        }
+
+        static bool CheckImageChange(int[] last_image,int length,int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex)
+        {
+            if (length == 1)
+            {
+                if(last_image[0]!=age||last_image[1]!= gender|| last_image[2]!= actorGenderChange|| last_image[19] != clotheIndex
+                    || last_image[3]!= faceDate[0]
+                    || last_image[11] != faceColor[0])
+                {
+                    last_image[0] = age;
+                    last_image[1] = gender;
+                    last_image[2] = actorGenderChange;
+                    last_image[19] = clotheIndex;
+
+                    last_image[3] = faceDate[0];
+
+                    last_image[12] = faceColor[0];
+
+                    return true;
+                }
+            }
+            else
+            {
+                if (last_image[0] != age || last_image[1] != gender || last_image[2] != actorGenderChange || last_image[19] != clotheIndex
+
+                    || last_image[3] != faceDate[0] || last_image[4] != faceDate[1] || last_image[5] != faceDate[2] || last_image[6] != faceDate[3]
+                    || last_image[7] != faceDate[4] || last_image[8] != faceDate[5] || last_image[9] != faceDate[6] || last_image[10] != faceDate[7]
+
+                    || last_image[11] != faceColor[0] || last_image[12] != faceColor[1] || last_image[13] != faceColor[2] || last_image[14] != faceColor[3]
+                    || last_image[15] != faceColor[4] || last_image[16] != faceColor[5] || last_image[17] != faceColor[6] || last_image[18] != faceColor[7])
+                {
+                    last_image[0] = age;
+                    last_image[1] = gender;
+                    last_image[2] = actorGenderChange;
+                    last_image[19] = clotheIndex;
+
+                    last_image[3] = faceDate[0];
+                    last_image[4] = faceDate[1];
+                    last_image[5] = faceDate[2];
+                    last_image[6] = faceDate[3];
+                    last_image[7] = faceDate[4];
+                    last_image[8] = faceDate[5];
+                    last_image[9] = faceDate[6];
+                    last_image[10] = faceDate[7];
+
+                    last_image[11] = faceColor[0];
+                    last_image[12] = faceColor[1];
+                    last_image[13] = faceColor[2];
+                    last_image[14] = faceColor[3];
+                    last_image[15] = faceColor[4];
+                    last_image[16] = faceColor[5];
+                    last_image[17] = faceColor[6];
+                    last_image[18] = faceColor[7];
+
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

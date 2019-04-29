@@ -50,9 +50,44 @@ namespace GuiQuquAdventure
             return true;
         }
 
+        static string make_color = "234";
+        static string make_part = "3002";
+        static string make_message = "可以点击制作蛐蛐来免费领养蛐蛐！";
         static void OnGUI(UnityModManager.ModEntry modEntry)
         {
-
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("颜色", GUILayout.Width(50));
+            make_color = GUILayout.TextField(make_color, GUILayout.Width(100));
+            GUILayout.Space(50);
+            GUILayout.Label("部位", GUILayout.Width(50));
+            make_part = GUILayout.TextField(make_part, GUILayout.Width(100));
+            GUILayout.Space(50);
+            if (GUILayout.Button("制作蛐蛐", GUILayout.Width(100)))
+            {
+                if (int.TryParse(make_color, out int color) && int.TryParse(make_part, out int partId))
+                {
+                    if (DateFile.instance.cricketDate.ContainsKey(color)&& DateFile.instance.cricketDate.ContainsKey(partId))
+                    {
+                        int itemId = DateFile.instance.MakeNewItem(10000);
+                        GetQuquWindow.instance.MakeQuqu(itemId, color, partId);
+                        DateFile.instance.GetItem(DateFile.instance.MianActorID(), itemId, 1, false);
+                    }
+                    else
+                    {
+                        make_message = "不存在的颜色ID或部位ID！";
+                        make_color = "234";
+                        make_part = "3002";
+                    }
+                }
+                else
+                {
+                    make_message = "输入的颜色ID或部位ID错误！";
+                    make_color = "234";
+                    make_part = "3002";
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label(make_message);
         }
 
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)

@@ -42,7 +42,8 @@ namespace GuiQuquAdventure
         {
             Color color = Tools.GetColor(ip);
             Color shadowColor = Tools.GetShadowColor(color);
-            text.color = shadowColor;
+            //text.color = shadowColor;
+            text.text = $"<color=#{(color.r * 255).ToString("0x")}{(color.g * 255).ToString("0x")}{(color.b * 255).ToString("0x")}>✦</color>{text.text}";
             shadow.effectColor = color;
         }
     }

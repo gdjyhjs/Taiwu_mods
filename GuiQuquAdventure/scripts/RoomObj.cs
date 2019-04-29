@@ -23,7 +23,7 @@ namespace GuiQuquAdventure
 
         void OnClickRoom()
         {
-            DataFile.instance.hall_data.room_data[this.level].chat_data = new ChatData[0]; // 清空要进入的房间的聊天记录
+            DataFile.instance.hall_data.room_data[this.level].chat_data = new List<ChatData>(); // 清空要进入的房间的聊天记录
             PlayerData.self.level = this.level;
             QuquHall.instance.GetData();
             if (QuquChat.instance)

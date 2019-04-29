@@ -19,6 +19,7 @@ namespace GuiQuquAdventure
         int desk_idx;
         int observer;
         Transform tImage;
+        int[] last_image = new int[20];
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
@@ -67,7 +68,7 @@ namespace GuiQuquAdventure
 #if !TAIWU_GAME
             if (null != playerData && playerData.ip != "0")
             {
-                Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
+                Tools.UpdateFace(last_image, actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
             }
 #endif
             if (this.ip == playerData.ip && this.desk_idx == playerData.desk_idx && this.observer == playerData.observer)
@@ -98,7 +99,8 @@ namespace GuiQuquAdventure
         {
             Color color = Tools.GetColor(ip);
             Color shadowColor = Tools.GetShadowColor(color);
-            text.color = shadowColor;
+            //text.color = shadowColor;
+            text.text = $"<color=#{(color.r*255).ToString("0x")}{(color.g * 255).ToString("0x")}{(color.b * 255).ToString("0x")}>✦</color>{text.text}" ;
             shadow.effectColor = color;
         }
     }
