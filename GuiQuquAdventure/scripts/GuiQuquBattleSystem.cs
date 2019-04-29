@@ -1,8 +1,11 @@
 ﻿using DG.Tweening;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 namespace GuiQuquAdventure
 {
@@ -293,9 +296,9 @@ namespace GuiQuquAdventure
                 .SetUpdate(isIndependentUpdate: true);
             t.SetAutoKill(false);
             t.Pause();
-            Tweener t2 = chooseBodyWindow.DOSizeDelta(new Vector2(280f, 120f), 0.2f).SetUpdate(true);
-            t2.SetAutoKill(false);
-            t2.Pause();
+            //Tweener t2 = chooseBodyWindow.DOSizeDelta(new Vector2(280f, 120f), 0.2f).SetUpdate(true);
+            //t2.SetAutoKill(false);
+            //t2.Pause();
             Tweener t3 = acotrWindow.GetComponent<RectTransform>().DOLocalMoveX(0f, 0.2f).SetEase(Ease.OutBack)
                 .SetUpdate(isIndependentUpdate: true);
             t3.SetAutoKill(false);
@@ -307,7 +310,11 @@ namespace GuiQuquAdventure
         /// </summary>
         public void ShowQuquBattleWindow()
         {
-            GuiRandom.InitSeed((int)(playId/1000));// 初始化随机种子
+            if (gameObject.activeSelf)
+                return;
+
+            long num = playId%100000000;
+            GuiRandom.InitSeed((int)num);// 初始化随机种子
 
             Main.Logger.Log("ShowQuquBattleWindow 显示战斗窗口 |" + Time.time);
             if (!showQuquBattleWindow)
@@ -764,6 +771,8 @@ namespace GuiQuquAdventure
                     GetQuquWindow.instance.MakeQuqu(rightQuquId[i], enemyQuquColor, enemyQuquPartId);
                     DateFile.instance.itemsDate[rightQuquId[i]][2004] = enemyQuquInjurys;
                 }
+                Main.Logger.Log("左方蛐蛐" + leftQuquId[0] + leftQuquId[1] + leftQuquId[2]);
+                Main.Logger.Log("右方蛐蛐" + rightQuquId[0] + rightQuquId[1] + rightQuquId[2]);
             }
             else // 玩家选择出战蛐蛐和赌注
             {
@@ -881,7 +890,7 @@ namespace GuiQuquAdventure
         private void UpdateActorQuquValue(int index)
         {
             int ququ_id = leftQuquId[index];
-            if (ququ_id >= 0)
+            if (rightPlayer != null || ququ_id > 0)
             {
                 actorBattleQuquNameText[index].text = DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(ququ_id, 8)), DateFile.instance.GetItemDate(ququ_id, 0));
                 actorBattleQuquPower1Text[index].text = GetQuquWindow.instance.GetQuquDate(ququ_id, 21).ToString();
@@ -899,7 +908,7 @@ namespace GuiQuquAdventure
                 actorQuquName[index].text = "";
                 actorQuquHpText[index].text = "";
             }
-            actorQuquIcon[index].sprite = ((ququ_id < 0) ? GetSprites.instance.itemSprites[0] : DateFile.instance.GetCricketImage(ququ_id));
+            actorQuquIcon[index].sprite = (!(rightPlayer != null || ququ_id > 0) ? GetSprites.instance.itemSprites[0] : DateFile.instance.GetCricketImage(ququ_id));
             actorQuquIcon[index].name = "ActorQuqu," + ququ_id;
         }
 
@@ -912,20 +921,20 @@ namespace GuiQuquAdventure
             if (rightPlayer!=null)
             {
                 enemyQuquName[index].text = DateFile.instance.SetColoer(20002, DateFile.instance.massageDate[3][2]);
-                hideQuquImage[index].SetActive(value: true);
+                hideQuquImage[index].SetActive(false);
+                enemyQuquHp[index] = GetQuquWindow.instance.GetQuquDate(rightQuquId[index], 11);
+                enemyQuquSp[index] = GetQuquWindow.instance.GetQuquDate(rightQuquId[index], 12);
+                enemyQuquIcon[index].sprite = DateFile.instance.GetCricketImage(rightQuquId[index]);
+                enemyQuquIcon[index].name = "EnemyQuqu," + rightQuquId[index];
+                int num = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[index], 901));
+                int num2 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[index], 902));
+                enemyQuquHpText[index].text = $"{ActorMenu.instance.Color3(num, num2)}{num}</color>/{num2}";
             }
             else
             {
                 enemyQuquName[index].text = enemyBattleQuquNameText[index].text;
-                hideQuquImage[index].SetActive(value: false);
+                hideQuquImage[index].SetActive(true);
             }
-            enemyQuquHp[index] = GetQuquWindow.instance.GetQuquDate(rightQuquId[index], 11);
-            enemyQuquSp[index] = GetQuquWindow.instance.GetQuquDate(rightQuquId[index], 12);
-            enemyQuquIcon[index].sprite = DateFile.instance.GetCricketImage(rightQuquId[index]);
-            enemyQuquIcon[index].name = "EnemyQuqu," + rightQuquId[index];
-            int num = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[index], 901));
-            int num2 = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[index], 902));
-            enemyQuquHpText[index].text = $"{ActorMenu.instance.Color3(num, num2)}{num}</color>/{num2}";
         }
 
         private void UpdateQuquHp(int index)
@@ -1505,40 +1514,42 @@ namespace GuiQuquAdventure
         //}
 
         /// <summary>
-        /// 显示隐藏蛐蛐图像
+        /// 显示蛐蛐盖子打开
         /// </summary>
         /// <param name="index">战斗回合</param>
         /// <returns></returns>
         private bool ShowHideQuquImage(int index)
         {
-            if (hideQuquImage[index].activeSelf)
-            {
-                hideQuquImage[index].GetComponent<RectTransform>().DOScale(new Vector3(2f, 2f, 1f), 0.6f).SetEase(Ease.InBack)
-                    .OnComplete(delegate
-                    {
-                        enemyQuquName[index].text = enemyBattleQuquNameText[index].text;
-                        hideQuquImage[index].SetActive(value: false);
-                    });
-                Component[] componentsInChildren = hideQuquImage[index].GetComponentsInChildren<Component>();
-                Component[] array = componentsInChildren;
-                foreach (Component component in array)
-                {
-                    if (component is Graphic)
-                    {
-                        (component as Graphic).CrossFadeAlpha(0f, 0.6f, ignoreTimeScale: false);
-                    }
-                }
-                return true;
-            }
+            //if (hideQuquImage[index].activeSelf)
+            //{
+            //    hideQuquImage[index].GetComponent<RectTransform>().DOScale(new Vector3(2f, 2f, 1f), 0.6f).SetEase(Ease.InBack)
+            //        .OnComplete(delegate
+            //        {
+            //            enemyQuquName[index].text = enemyBattleQuquNameText[index].text;
+            //            hideQuquImage[index].SetActive(value: false);
+            //        });
+            //    Component[] componentsInChildren = hideQuquImage[index].GetComponentsInChildren<Component>();
+            //    Component[] array = componentsInChildren;
+            //    foreach (Component component in array)
+            //    {
+            //        if (component is Graphic)
+            //        {
+            //            (component as Graphic).CrossFadeAlpha(0f, 0.6f, ignoreTimeScale: false);
+            //        }
+            //    }
+            //    return true;
+            //}
+            hideQuquImage[index].SetActive(false);
             return false;
         }
 
         public void StartQuquBattle()
         {
+            Main.Logger.Log(Time.time + " 开始蛐蛐对战");
             leftWinTurn = 0;
             ququBattlePart = 2;
-            startBattleWindow.SetActive(value: false); // 隐藏开始战斗窗口
-            setBattleSpeedHolder.SetActive(value: true); // 显示战斗速度面板
+            startBattleWindow.SetActive(false); // 隐藏开始战斗窗口
+            setBattleSpeedHolder.SetActive(true); // 显示战斗速度面板
             for (int i = 0; i < 3; i++)
             {
                 Component[] componentsInChildren = ququBattleBack[i].GetComponentsInChildren<Component>();
@@ -1553,17 +1564,18 @@ namespace GuiQuquAdventure
             }
             for (int k = 0; k < battleValue.Length; k++)
             {
-                nextButtonMask[k].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 0.5f);
+                //nextButtonMask[k].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 0.5f);
+                DOColor(nextButtonMask[k].GetComponent<Image>(), new Color(0f, 0f, 0f, 0.5f), 0.5f);
             }
             for (int l = 0; l < actorQuquIcon.Length; l++)
             {
                 actorQuquIcon[l].GetComponent<Button>().interactable = false;
             }
             actorBodyImage.GetComponent<Button>().interactable = false;
-            //if (left_bet_typ == 2 && left_bet_id != DateFile.instance.MianActorID()) // 联网竞技没有好感
-            //{
-            //    DateFile.instance.ChangeFavor(left_bet_id, -DateFile.instance.ParseInt(DateFile.instance.GetActorDate(left_bet_id, 3, addValue: false)), updateActor: false, showMassage: false);
-            //}
+            if (!replay && left_bet_typ == 2 && left_bet_id != DateFile.instance.MianActorID()) // 使用同道做赌注会降低好感度(不是重播的清苦nag下)
+            {
+                DateFile.instance.ChangeFavor(left_bet_id, -DateFile.instance.ParseInt(DateFile.instance.GetActorDate(left_bet_id, 3, addValue: false)), updateActor: false, showMassage: false);
+            }
 
             // 初始化设置蛐蛐属性
             UpdateQuquHp(0);
@@ -1574,6 +1586,8 @@ namespace GuiQuquAdventure
 
         public void ShowStartBattleState()
         {
+            Main.Logger.Log(Time.time + " 显示开始战斗状态");
+
             int stateIndex = 0; // 0是双方都出手 1是左侧出手 2是右侧出手
             int left_level = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(leftQuquId[ququBattleTurn], 8)); // 品级
             int right_level = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[ququBattleTurn], 8));
@@ -1651,6 +1665,7 @@ namespace GuiQuquAdventure
             }
             SetBattleStateText(s1, _delay5, 2f); // 
             _delay5 += 1.5f;
+            Main.Logger.Log(Time.time + " stateIndex=" + stateIndex);
             switch (stateIndex)
             {
                 case 0:
@@ -1667,9 +1682,11 @@ namespace GuiQuquAdventure
 
         private void SetBattleStateText(string text, float delay, float size, int endTyp = -1)
         {
+            Main.Logger.Log(Time.time + " AAAStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
             battleStateText[ququBattleTurn].transform.DOScale(new Vector3(size, size, 1f), 0.1f).SetDelay(delay).SetEase(Ease.OutBack)
                 .OnStart(delegate
                 {
+                    Main.Logger.Log(Time.time + " BBBStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
                     battleStateText[ququBattleTurn].text = text;
                     battleStateText[ququBattleTurn].transform.localScale = new Vector3(0f, 0f, 1f);
                 });
@@ -1679,12 +1696,15 @@ namespace GuiQuquAdventure
 
         private IEnumerator BattleState(int endTyp, float waitTime)
         {
+            Main.Logger.Log(Time.time + " CCCendTyp=" + endTyp + " waitTime=" + waitTime);
             yield return new WaitForSeconds(waitTime);
+            Main.Logger.Log(Time.time + " DDDendTyp=" + endTyp + " waitTime=" + waitTime);
             if (endTyp == 0)
             {
                 battleStateText[ququBattleTurn].transform.DOScale(new Vector3(0f, 0f, 1f), 0.1f).SetDelay(0.8f).OnComplete(delegate
                 {
-                    nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0f), 0.2f);
+                    //nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0f), 0.2f);
+                    DOColor(nextButtonMask[ququBattleTurn].GetComponent<Image>(),new Color(0f, 0f, 0f, 0f), 0.2f);
                     QuquBattleLoopStart(0.1f, 0.2f);
                 });
             }
@@ -1707,7 +1727,11 @@ namespace GuiQuquAdventure
                 for (int i = 0; i < nextButton.Length; i++)
                 {
                     //nextButton[i].gameObject.SetActive(i == ququBattleTurn);
-                    Invoke("BattleNextPart", 1);
+                    if(i == ququBattleTurn)
+                    {
+                        Main.Logger.Log("3秒后开始下一场");
+                        Invoke("BattleNextPart", 3);
+                    }
                 }
             }
         }
@@ -1935,7 +1959,11 @@ namespace GuiQuquAdventure
                             actorQuqu[ququBattleTurn].DOKill();
                             enemyQuqu[ququBattleTurn].DOKill();
                             battleStateText[ququBattleTurn].text = "";
-                            nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //{
+                            //    SetBattleStateText(DateFile.instance.SetColoer(20010, DateFile.instance.massageDate[8003][4].Split('|')[1]), 0.4f, 3f, 2);
+                            //});
+                            DOColor(nextButtonMask[ququBattleTurn].GetComponent<Image>(), new Color(0f, 0f, 0f, 0.5f), 1f, delegate
                             {
                                 SetBattleStateText(DateFile.instance.SetColoer(20010, DateFile.instance.massageDate[8003][4].Split('|')[1]), 0.4f, 3f, 2);
                             });
@@ -2056,10 +2084,14 @@ namespace GuiQuquAdventure
                             actorQuqu[ququBattleTurn].DOKill();
                             enemyQuqu[ququBattleTurn].DOKill();
                             battleStateText[ququBattleTurn].text = "";
-                            nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
-                            {
-                                SetBattleStateText(DateFile.instance.SetColoer(20005, DateFile.instance.massageDate[8003][4].Split('|')[0]), 0.4f, 3f, 1);
-                            });
+                            //nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //{
+                            //    SetBattleStateText(DateFile.instance.SetColoer(20005, DateFile.instance.massageDate[8003][4].Split('|')[0]), 0.4f, 3f, 1);
+                            //});
+                            DOColor(nextButtonMask[ququBattleTurn].GetComponent<Image>(), new Color(0f, 0f, 0f, 0.5f), 1f, delegate
+                             {
+                                 SetBattleStateText(DateFile.instance.SetColoer(20005, DateFile.instance.massageDate[8003][4].Split('|')[0]), 0.4f, 3f, 1);
+                             });
                             Damage(defer, size, delay, text, textColor);
                             return;
                         }
@@ -2149,10 +2181,14 @@ namespace GuiQuquAdventure
                             actorQuqu[ququBattleTurn].DOKill();
                             enemyQuqu[ququBattleTurn].DOKill();
                             battleStateText[ququBattleTurn].text = "";
-                            nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
-                            {
-                                SetBattleStateText(DateFile.instance.SetColoer(20010, DateFile.instance.massageDate[8003][4].Split('|')[1]), 0.4f, 3f, 2);
-                            });
+                            //nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //{
+                            //    SetBattleStateText(DateFile.instance.SetColoer(20010, DateFile.instance.massageDate[8003][4].Split('|')[1]), 0.4f, 3f, 2);
+                            //});
+                            DOColor(nextButtonMask[ququBattleTurn].GetComponent<Image>(), new Color(0f, 0f, 0f, 0.5f), 1f, delegate
+                             {
+                                 SetBattleStateText(DateFile.instance.SetColoer(20010, DateFile.instance.massageDate[8003][4].Split('|')[1]), 0.4f, 3f, 2);
+                             });
                         }
                     }
                     else
@@ -2164,7 +2200,11 @@ namespace GuiQuquAdventure
                             actorQuqu[ququBattleTurn].DOKill();
                             enemyQuqu[ququBattleTurn].DOKill();
                             battleStateText[ququBattleTurn].text = "";
-                            nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
+                            //{
+                            //    SetBattleStateText(DateFile.instance.SetColoer(20005, DateFile.instance.massageDate[8003][4].Split('|')[0]), 0.4f, 3f, 1);
+                            //});
+                            DOColor(nextButtonMask[ququBattleTurn].GetComponent<Image>(), new Color(0f, 0f, 0f, 0.5f), 1f, delegate
                             {
                                 SetBattleStateText(DateFile.instance.SetColoer(20005, DateFile.instance.massageDate[8003][4].Split('|')[0]), 0.4f, 3f, 1);
                             });
@@ -2778,6 +2818,7 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
             battleEndBodyText = ququ_battle_end_window.Find("QuquBattleEndBack/BattleEndBodyNameBack/BattleEndBodyBack/BattleEndBodyText").GetComponent<Text>();
 
 
+
             //try
             //{
             //    // 创建多个赌注按钮
@@ -2844,11 +2885,42 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
             closeBattleButton.GetComponentInChildren<Button>().onClick.AddListener(delegate { CloseQuquBattleWindow(); }); // 关闭游戏
 
 
+            // 加速按钮
+            for (int i = 0; i < setBattleSpeedToggle.Length; i++)
+            {
+                var item = setBattleSpeedToggle[i];
+                var speed = (i) * 4 + 1;
+                item.onValueChanged.AddListener(delegate { if (item.isOn) SetQuquBattleSpeed(speed); });
+                item.GetComponentInChildren<Text>().text = "X " + speed;
+            }
 
 
 
 
+        }
 
+
+        void DOColor(Image img, Color color, float duration, Action fun = null)
+        {
+            StartCoroutine(EDOColor(img, color, duration, fun));
+
+            //img.DOColor(color, duration).OnComplete(delegate { if (fun != null) fun(); });
+        }
+        IEnumerator EDOColor(Image img, Color color, float duration, Action fun)
+        {
+            float t = 0;
+            Color c = img.color;
+            while(t< duration)
+            {
+                img.color = (color - c) / duration * Time.deltaTime;
+                t += Time.deltaTime;
+                yield return null;
+            }
+            img.color = color;
+            if (fun != null)
+            {
+                fun();
+            }
         }
     }
 

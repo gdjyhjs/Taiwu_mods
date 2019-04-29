@@ -9,7 +9,7 @@ namespace GuiQuquAdventure
     {
         public static QuquChat instance;
         List<ChatItem> items;
-        GameObject prefab;
+        public GameObject prefab;
         ScrollRect scroll;
 
         private void Awake()

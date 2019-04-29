@@ -36,7 +36,7 @@ namespace GuiQuquAdventure
 
             RectTransform tf = (RectTransform)go.transform;
             tf.SetParent(tImage, false);
-            tf.localScale = Vector3.one * 0.25f;
+            tf.localScale = Vector3.one * 0.15f;
             tf.anchoredPosition = new Vector2(-5, -50);
 #endif
         }

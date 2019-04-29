@@ -1077,7 +1077,7 @@ namespace GuiQuquAdventure // 聊天室
 
     public class BattleData : SortTimeStamp // 对战数据
     {
-        public static List<BattleData> battleDatas = new List<BattleData>();
+        public static List<BattleData> battleDatas;
         public BattleData()
         {
             battleDatas.Add(this);

@@ -11,10 +11,11 @@ namespace GuiQuquAdventure
     {
 
         PlayerData data;
+        public bool show_player;
         Text text;
         Shadow shadow;
-        Transform tImage;
-        GameObject gImage;
+        //Transform tImage;
+        //GameObject gImage;
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
@@ -38,14 +39,14 @@ namespace GuiQuquAdventure
         {
             text = transform.Find("Name").GetComponent<Text>();
             shadow = text.GetComponent<Shadow>();
-            tImage = transform.Find("image");
-            gImage = tImage.gameObject;
+            //tImage = transform.Find("image");
+            //gImage = tImage.gameObject;
 #if !TAIWU_GAME
             GameObject go = GameObject.Instantiate(Tools.GetActorFaceSample());
             actorFace = go.GetComponent<ActorFace>();
 
             RectTransform tf = (RectTransform)go.transform;
-            tf.SetParent(tImage, false);
+            tf.SetParent(transform, false);
             tf.localScale = Vector3.one * 0.45f;
             tf.anchoredPosition = new Vector2(0, -80);
 #endif
@@ -76,8 +77,8 @@ namespace GuiQuquAdventure
         public void SetData(PlayerData playerData)
         {
             this.data = playerData;
-
-            if (playerData.ip == "0") // 空位
+            show_player = playerData.ip != "0";
+            if (!show_player) // 空位
             {
                 text.text = "虚位以待";
                 text.color = Color.gray;
@@ -116,7 +117,7 @@ namespace GuiQuquAdventure
             }
             else
             {
-                //Tools.UpdateFace(actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, false, true);
+                Tools.UpdateFace(actorFace, 0, 0, 0, new int[] { 0 }, new int[] { 0 }, 0, true);
             }
 #endif
         }

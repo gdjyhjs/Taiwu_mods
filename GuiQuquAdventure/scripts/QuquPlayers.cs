@@ -9,7 +9,7 @@ namespace GuiQuquAdventure
     {
         public static QuquPlayers instance;
         List<PlayerItem> items;
-        GameObject prefab;
+        public GameObject prefab;
         ScrollRect scroll;
 
         private void Awake()

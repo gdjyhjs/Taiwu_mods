@@ -783,14 +783,21 @@ namespace GuiTest
         //        return true;
         //    }
         //}
-        //// [HarmonyPatch(typeof(QuquBattleSystem), "Update")]
-        //// public static class Update
-        //// {
-        ////     public static bool Prefix()
-        ////     {
-        ////         Log("Update");
-        ////         return true;
-        ////     }
-        //// }
+        [HarmonyPatch(typeof(ActorFace), "UpdateFace")]
+        public static class UpdateFace
+        {
+            public static bool Prefix(int actorId, int age, int gender, int actorGenderChange, int[] faceDate, int[] faceColor, int clotheIndex, bool life = false)
+            {
+                if (faceDate.Length == 1)
+                {
+                    Main.Logger.Log(faceDate[0].ToString());
+                    for (int i = 0; i < faceColor.Length; i++)
+                    {
+                        Main.Logger.Log(faceColor[i].ToString());
+                    }
+                }
+                return true;
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,11 +16,17 @@ namespace GuiQuquAdventure
         };
         RoomChair[] chairs;
         Text des;
+        int desk_id;
         int typ;
         private void Awake()
         {
             des = transform.Find("Text").GetComponent<Text>();
+            Button btn = gameObject.AddComponent<Button>();
+            btn.onClick.AddListener(OnClickDesk);
+            btn.targetGraphic = gameObject.GetComponent<Image>();
             int count = transform.childCount - 1;
+            if (RoomChair.si < RoomChair.mi)
+                Main.Logger.Log("椅子数量"+ count);
             chairs = new RoomChair[count];
             for (int i = 0; i < count; i++)
             {
@@ -27,18 +34,51 @@ namespace GuiQuquAdventure
             }
         }
 
-        public void SetDataForMark(int desk_idx, int mark)
+        private void OnClickDesk()
         {
-            Main.Logger.Log("赌桌idx=" + desk_idx);
+            int observer = -1;
             for (int i = 0; i < chairs.Length; i++)
             {
+                var item = chairs[i];
+                if (!item.show_player)
+                {
+                    observer = i < 2 ? 0 : 1;
+                    break;
+                }
+            }
+            if (observer != -1)
+            {
+                QuquDesk.instance.no_operation = 0;
+                PlayerData.self.desk_idx = desk_id;
+                PlayerData.self.ready = 0;
+                PlayerData.self.observer = observer;
+                DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].chat_data = new ChatData[0]; // 清空要进入的房间的聊天记录
+                DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].battle_data = new BattleData[0]; // 清空要进入的房间的聊天记录
+                QuquHall.instance.GetData();
+            }
+            else
+            {
+                YesOrNoWindow.instance.SetYesOrNoWindow(-1, "注意!", "这张桌子已经坐满人了！", false, true);
+            }
+        }
+
+        public void SetDataForMark(int desk_idx, int mark)
+        {
+            this.desk_id = desk_idx;
+            if (desk_id < RoomChair.mi)
+                Main.Logger.Log("赌桌idx=" + desk_idx);
+            for (int i = 0; i < chairs.Length; i++)
+            {
+                if (desk_id < RoomChair.mi)
+                    Main.Logger.Log("赌桌位置=" + i);
                 int bit = 1 << i;
                 chairs[i].SetPlayerShow((mark & bit) == bit, desk_idx, i);
             }
             typ = (mark & (1 << chairs.Length)) > 0 ? 1 : 0;
             string des = "";
             int desk_level = desk_idx / 10;
-            Main.Logger.Log("赌桌等级=" + desk_level);
+            if (desk_id < RoomChair.mi)
+                Main.Logger.Log("赌桌等级=" + desk_level);
             switch (PlayerData.self.bet_typ)
             {
                 case 0:

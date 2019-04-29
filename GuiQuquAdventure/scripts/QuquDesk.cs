@@ -18,6 +18,12 @@ namespace GuiQuquAdventure
 
 
         public static QuquDesk instance;
+        /// <summary>
+        /// 无操作时间
+        /// </summary>
+        public float no_operation = 0;
+        float max_no_operation = 300;
+        int last_t;
         DeskData data;
         PlayerObj[] players;
         Text tLeftBtn;
@@ -26,7 +32,8 @@ namespace GuiQuquAdventure
         Button bRightBtn;
         GameObject leftBtn;
         GameObject rightBtn;
-        int my_idx = 0;
+        Text tBattleDeskName;
+        int my_idx = -1;
         PlayerData self;
 
         private void Awake()
@@ -34,6 +41,7 @@ namespace GuiQuquAdventure
             instance = this;
             self = PlayerData.self;
 
+            tBattleDeskName = transform.Find("Text").GetComponent<Text>();
 
             Transform player_root = transform.GetChild(0);
             players = new PlayerObj[player_root.childCount];
@@ -63,7 +71,7 @@ namespace GuiQuquAdventure
                 {
                     PlayerData player = playerDats[i];
                     players[i].SetData(player);
-                    if(playerDats[i].ip == self.ip)
+                    if (playerDats[i].ip == self.ip)
                     {
                         my_idx = i;
                     }
@@ -78,12 +86,12 @@ namespace GuiQuquAdventure
                 }
             }
 
-            if(self.observer == 0) // 参赛选手
+            if (self.observer == 0) // 参赛选手
             {
                 GameObject showBtn;
                 GameObject hideBtn;
                 Text tBtn;
-                if(my_idx == 0)  // 在左边
+                if (my_idx == 0)  // 在左边
                 {
                     showBtn = leftBtn;
                     hideBtn = rightBtn;
@@ -126,15 +134,14 @@ namespace GuiQuquAdventure
                     tRightBtn.text = bet_player_name;
                 }
             }
-
-
         }
 
         void OnClickReady(int idx)
         {
+            no_operation = 0;
             if (self.observer == 0) // 参赛选手
             {
-                if(idx == my_idx)
+                if (idx == my_idx)
                 {
                     if (self.ready == 0) // 确认赌注
                     {
@@ -153,7 +160,7 @@ namespace GuiQuquAdventure
             }
             else
             {
-                if(self.observer == 2 + idx) // 押注
+                if (self.observer == 2 + idx) // 押注
                 {
                     self.observer = 1;
                 }
@@ -168,6 +175,55 @@ namespace GuiQuquAdventure
         public PlayerData GetPlayer(int idx)
         {
             return data.player_data[idx];
+        }
+
+        void OnEnabled()
+        {
+            no_operation = 0;
+        }
+
+        void Update()
+        {
+            if (!GuiQuquBattleSystem.instance.gameObject.activeSelf && self.observer == 0 && self.ready != 2 && players[(my_idx + 1) % 2].show_player)
+            {
+                no_operation += Time.deltaTime;
+                if (no_operation > max_no_operation)
+                {
+                    no_operation = 0;
+                    OnClickReady(my_idx);
+                    UpdateDeskDes();
+                }
+            }
+            else
+            {
+                no_operation = 0;
+                UpdateDeskDes();
+            }
+        }
+
+        public void UpdateDeskDes(bool force = false)
+        {
+            int t = (int)(max_no_operation - no_operation);
+            if(force || last_t != t)
+            {
+                last_t = t;
+                int desk_level = self.desk_idx / 10;
+                string desk_des = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
+                if (QuquDesk.instance.no_operation > 0)
+                {
+                    switch (self.ready)
+                    {
+                        case 0:
+                            desk_des = $"{desk_des}\n请在{t}秒内确认!";
+                            break;
+
+                        case 1:
+                            desk_des = $"{desk_des}\n请在{t}秒内准备!";
+                            break;
+                    }
+                }
+                tBattleDeskName.text = desk_des;
+            }
         }
     }
 }

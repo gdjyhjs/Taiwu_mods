@@ -10,7 +10,7 @@ namespace GuiQuquAdventure
     {
         public static QuquHall instance;
         float next_auto_send_time = 0;
-        float auto_send_interval = 10;
+        float auto_send_interval = .5f;
         DataFile dataFile;
         GameObject all;
         GameObject hall;
@@ -18,7 +18,6 @@ namespace GuiQuquAdventure
         GameObject desk;
         RoomObj[] rooms;
         RoomDeskObj[] desks;
-        Text tBattleDeskName;
         Text tTitle;
         GameObject chat;
         QuquChat ququChat;
@@ -49,6 +48,7 @@ namespace GuiQuquAdventure
         {
             instance = this;
 
+            BattleData.battleDatas = new List<BattleData>();
             PlayerData.self = new PlayerData();
             self = PlayerData.self;
             self.level = -1;
@@ -58,9 +58,8 @@ namespace GuiQuquAdventure
 
             all = transform.Find("all").gameObject;
             Image bg = all.GetComponent<Image>();
-            Color tmp_c = bg.color;
-            tmp_c.a = 1; // 背景不透明
-            bg.color = tmp_c;
+            bg.color = new Color(1, 1, 1, 1);
+            bg.sprite = QuquBattleSystem.instance.GetComponent<Image>().sprite;
 
             Transform room_parent = transform.Find("all/Hall");
             hall = room_parent.gameObject;
@@ -87,13 +86,13 @@ namespace GuiQuquAdventure
             ququDesk = desk.AddComponent<QuquDesk>();
 
 
-            tBattleDeskName = battle_desk.Find("Text").GetComponent<Text>();
             tTitle = transform.Find("all/Text").GetComponent<Text>();
 
             Transform chat_parent = transform.Find("all/chat");
             chat = chat_parent.gameObject;
             ququChat = chat_parent.GetChild(0).GetChild(0).gameObject.AddComponent<QuquChat>();
-            
+
+
             inputField = chat_parent.Find("InputField").GetComponent<InputField>();
             Button sendChatBtn = chat_parent.Find("InputField/SendButton").GetComponent<Button>();
             sendChatBtn.onClick.AddListener(OnClickSendChat);
@@ -101,6 +100,57 @@ namespace GuiQuquAdventure
             Transform people_parent = transform.Find("all/people");
             people = people_parent.gameObject;
             ququPlayers = people_parent.GetChild(0).GetChild(0).gameObject.AddComponent<QuquPlayers>();
+
+            Main.Logger.Log("搬运聊天背景");
+            Image chatBg = chat_parent.GetComponent<Image>();
+            Image propleBg = people_parent.GetComponent<Image>();
+            Image chatBgCp = QuquBattleSystem.instance.transform.Find("BattleActorBack").GetComponent<Image>();
+            if (chatBgCp)
+            {
+                Main.Logger.Log("搬运到聊天背景");
+                chatBg.color = chatBgCp.color;
+                chatBg.sprite = chatBgCp.sprite;
+                propleBg.color = chatBgCp.color;
+                propleBg.sprite = chatBgCp.sprite;
+            }
+            Main.Logger.Log("搬运聊天背景完成 要搬运字体了");
+            Text chatText = ququChat.prefab.GetComponentInChildren<Text>();
+            Text peopleText = ququPlayers.prefab.GetComponentInChildren<Text>();
+            Text cpText = QuquBattleSystem.instance.transform.Find("BattleActorBack/ActorBattleBodyNameBack/BattleBodyBack/BodyItemBack/ItemNameBack/ItemNameText").GetComponent<Text>();
+            chatText.font = cpText.font;
+            chatText.color = cpText.color;
+            peopleText.font = cpText.font;
+            chatText.color = cpText.color;
+            Shadow shadow = cpText.GetComponent<Shadow>();
+            if (shadow)
+            {
+                Main.Logger.Log("阴影");
+                chatText.GetComponent<Shadow>().effectColor = shadow.effectColor;
+                peopleText.GetComponent<Shadow>().effectColor = shadow.effectColor;
+            }
+            Main.Logger.Log("完毕");
+            ScrollRect cpScroll = WorldMapSystem.instance.GetComponentInParent<ScrollRect>();
+            Scrollbar scrollbar = cpScroll.verticalScrollbar;
+            Image handBg = scrollbar.GetComponent<Image>();
+            Image handImg = scrollbar.handleRect.GetComponent<Image>();
+            Image chatHandBg = chat_parent.Find("Scrollbar Vertical").GetComponent<Image>();
+            Image chatHandImg = chat_parent.Find("Scrollbar Vertical/Sliding Area/Handle").GetComponent<Image>();
+            Image peopleHandBg = people_parent.Find("Scrollbar Vertical").GetComponent<Image>();
+            Image peopleHandImg = people_parent.Find("Scrollbar Vertical/Sliding Area/Handle").GetComponent<Image>();
+            chatHandBg.color = handBg.color;
+            chatHandBg.sprite = handBg.sprite;
+            chatHandImg.color = handImg.color;
+            chatHandImg.sprite = handImg.sprite;
+            peopleHandBg.color = handBg.color;
+            peopleHandBg.sprite = handBg.sprite;
+            peopleHandImg.color = handImg.color;
+            peopleHandImg.sprite = handImg.sprite;
+            Main.Logger.Log("滑动条搬运完毕");
+
+
+
+
+
 
             inputField.characterLimit = 100;
 
@@ -133,7 +183,8 @@ namespace GuiQuquAdventure
             chat.SetActive(false);
             people.SetActive(false);
             mask.enabled = false;
-            all.SetActive(false);
+            //all.SetActive(false);
+            SetHallActive(false);
 
             Text[] texts = transform.GetComponentsInChildren<Text>();
             foreach (var item in texts)
@@ -173,6 +224,12 @@ namespace GuiQuquAdventure
 
         void SetQuquAndBet()
         {
+            if (self.desk_idx != -1)
+            {
+                YesOrNoWindow.instance.SetYesOrNoWindow(-1, "注意!", "对战中不能更换赌注和出战蛐蛐！", false, true);
+                return;
+            }
+
             GuiQuquBattleSystem.instance.actorTyp =  GuiQuquBattleSystem.ActorTyp.LeftObserver;
             GuiQuquBattleSystem.instance.playId = -1;
             GuiQuquBattleSystem.instance.leftPlayer = PlayerData.self;
@@ -182,10 +239,6 @@ namespace GuiQuquAdventure
 
         void InitBetAndQuqu()
         {
-            t = new RectTransform[8];
-
-
-
             actorBodyImage = new Image[3];
             actorBodyNameText = new Text[3];
             go_ququs = new GameObject[3];
@@ -194,12 +247,15 @@ namespace GuiQuquAdventure
             actorQuquHpText = new Text[3];
             actorQuquIcon = new Image[3];
 
-            DateFile.instance.massageDate.Add(1556454951, new Dictionary<int, string>() { { 0, "设置蛐蛐和押注" }, { 1, "选择符合要求的蛐蛐和押注作为赛注..." } });
-            DateFile.instance.massageDate.Add(1556454952, new Dictionary<int, string>() { { 0, "隐藏蛐蛐竞技场" }, { 1, "隐藏蛐蛐竞技场，也可以使用快捷键F1打开或者隐藏..." } });
-            DateFile.instance.massageDate.Add(1556454953, new Dictionary<int, string>() { { 0, "退出房间" }, { 1, "退出房间，返回到大厅中，将不计为在线人数..." } });
-            DateFile.instance.massageDate.Add(1556454954, new Dictionary<int, string>() { { 0, "退出赌桌" }, { 1, "退出赌桌，可以选择其他赌桌进行游戏，或者设置赌注和出战蛐蛐..." } });
-            DateFile.instance.massageDate.Add(1556454955, new Dictionary<int, string>() { { 0, "押注" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的赌桌要求押注的价值不同..." } });
-            DateFile.instance.massageDate.Add(1556454956, new Dictionary<int, string>() { { 0, "出战蛐蛐" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的房间要求蛐蛐不能超过的等级不同..." } });
+            if (!DateFile.instance.massageDate.ContainsKey(1556454951))
+            {
+                DateFile.instance.massageDate.Add(1556454951, new Dictionary<int, string>() { { 0, "设置蛐蛐和押注" }, { 1, "选择符合要求的蛐蛐和押注作为赛注..." } });
+                DateFile.instance.massageDate.Add(1556454952, new Dictionary<int, string>() { { 0, "隐藏蛐蛐竞技场" }, { 1, "隐藏蛐蛐竞技场，也可以使用快捷键F1打开或者隐藏..." } });
+                DateFile.instance.massageDate.Add(1556454953, new Dictionary<int, string>() { { 0, "退出房间" }, { 1, "退出房间，返回到大厅中，将不计为在线人数..." } });
+                DateFile.instance.massageDate.Add(1556454954, new Dictionary<int, string>() { { 0, "退出赌桌" }, { 1, "退出赌桌，可以选择其他赌桌进行游戏，或者设置赌注和出战蛐蛐..." } });
+                DateFile.instance.massageDate.Add(1556454955, new Dictionary<int, string>() { { 0, "押注" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的赌桌要求押注的价值不同..." } });
+                DateFile.instance.massageDate.Add(1556454956, new Dictionary<int, string>() { { 0, "出战蛐蛐" }, { 1, "设置押注后，斗蛐蛐失败将失去此押注，胜利可获得对方的押注，不同等级的房间要求蛐蛐不能超过的等级不同..." } });
+            }
 
             Main.Logger.Log("初始化赌注和蛐蛐");
 
@@ -269,10 +325,6 @@ namespace GuiQuquAdventure
             tf_set.SetParent(transform.Find("all/set"), false);
             ((RectTransform)tf_set).anchoredPosition = new Vector2(1400, 20);
 
-            t[3] = tf_bet as RectTransform;
-            t[4] = tf_close as RectTransform;
-            t[5] = tf_set as RectTransform;
-
             Main.Logger.Log("初始化赌注和蛐蛐");
 
             GameObject left_bet = Instantiate(bet_sample);
@@ -294,10 +346,6 @@ namespace GuiQuquAdventure
             ((RectTransform)tf_right_bet).anchoredPosition = new Vector2(-250, -100);
 
             Main.Logger.Log("初始化赌注和蛐蛐");
-
-            t[6] = tf_left_bet as RectTransform;
-            t[7] = tf_right_bet as RectTransform;
-
 
             UpdateBetAndQuqu();
         }
@@ -393,7 +441,7 @@ namespace GuiQuquAdventure
         {
             if (self.desk_idx == -1 && self.level == -1) // 在大厅中
             {
-                all.SetActive(false);
+                SetHallActive(false);
             }
             else if (self.desk_idx == -1 && self.level != -1) // 在房间中
             {
@@ -447,14 +495,14 @@ namespace GuiQuquAdventure
             }
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                all.SetActive(!all.activeSelf);
+                SetHallActive(!all.activeSelf);
             }
         }
 
         public void GetData(string chat_content = null,string chat_param = null)
         {
             SetSelfData();
-            next_auto_send_time = Time.time + auto_send_interval * 2;
+            next_auto_send_time = Time.time + auto_send_interval*10;
             if (self.desk_idx == -1 && self.level == -1) // 获取大厅数据
             {
                 dataFile.GetHallData(OnHallData, self.name, self.GetImage());
@@ -494,7 +542,7 @@ namespace GuiQuquAdventure
 
         void OnHallData(string error, long time_stamp, RoomData[] roomdata)
         {
-            next_auto_send_time = Time.time + auto_send_interval*2;
+            next_auto_send_time = Time.time + auto_send_interval;
             if (null == error)
             {
                 inputField.text = "";
@@ -534,7 +582,7 @@ namespace GuiQuquAdventure
 
         void OnRoomData(string error, long time_stamp, RoomData roomdata)
         {
-            next_auto_send_time = Time.time + auto_send_interval;
+            next_auto_send_time = Time.time + auto_send_interval*2;
             if (null == error)
             {
                 tPeopleNum.text = "";
@@ -580,7 +628,7 @@ namespace GuiQuquAdventure
 
         void OnDeskData(string error, long time_stamp, DeskData deskData, string battle_flag)
         {
-            next_auto_send_time = Time.time + auto_send_interval /2;
+            next_auto_send_time = Time.time + auto_send_interval;
             if (null == error)
             {
                 tPeopleNum.text = "";
@@ -595,9 +643,9 @@ namespace GuiQuquAdventure
                         this.chat.SetActive(true);
                         this.people.SetActive(false);
                         int desk_level = self.desk_idx / 10;
-                        tBattleDeskName.text = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
                         tTitle.text = $"{self.name} 大厅>{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
                         go_close.name = "1556454954,1556454954";
+                        QuquDesk.instance.UpdateDeskDes(true);
                     }
 
                     // 聊天
@@ -683,25 +731,23 @@ namespace GuiQuquAdventure
         string s1 = "1｜650002｜999#650002#902#4#901#3#33#1*1*1*1*1*1*1*1*1*0｜";
         string s2 = "1｜650002｜999#650002#902#4#901#3#33#1*1*1*1*1*1*1*1*1*0｜｜9｜0｜1";
         string s3 = "true";
-        string x = "0";
-        string y = "0";
-        string s = "1";
-        RectTransform[] t;
+        string s4 = "111";
+        string[] s = new string[] { "105#0#0*11｜203#3004#0｜232#3015#0", "232#3015#0｜105#0#0*11｜203#3004#0" };
         void OnGUI()
         {
             s1 = GUI.TextField(new Rect(10, 60, 140, 25), s1);
             s2 = GUI.TextField(new Rect(10, 110, 140, 25), s2);
             s3 = GUI.TextField(new Rect(10, 160, 40, 25), s3);
-            x = GUI.TextField(new Rect(10, 210, 40, 25), x);
-            y = GUI.TextField(new Rect(10, 260, 40, 25), y);
-            s = GUI.TextField(new Rect(10, 310, 40, 25), s);
+            s4 = GUI.TextField(new Rect(10, 210, 40, 25), s4);
+            s[0] = GUI.TextField(new Rect(10, 260, 140, 25), s[0]);
+            s[1] = GUI.TextField(new Rect(10, 310, 140, 25), s[1]);
             if (GUI.Button(new Rect(10, 10, 40, 25), "对战"))
             {
 
                 // 初始化测试数据
                 BattleData battleData = new BattleData();
                 battleData.battleFlag = s2;
-                battleData.time_stamp = 111;
+                battleData.time_stamp = long.Parse(s4);
                 PlayerData[] playerDatas = new PlayerData[2];
                 battleData.player_data = playerDatas;
                 for (int i = 0; i < playerDatas.Length; i++)
@@ -711,7 +757,7 @@ namespace GuiQuquAdventure
                     data.name = "晴华" + i;
                     data.ip = "113.66.219.135";
                     data.observer = 0;
-                    data.ququ = new string[] { "105#0#0*11", "232#3015#0", "203#3004#0" };
+                    data.ququ = s[i].Split('｜');
                     data.time_stamp = 1556171873270;
                     data.ready = 0;
                     data.level = -1;
@@ -721,7 +767,7 @@ namespace GuiQuquAdventure
                 }
 
 
-                if (battleData.player_data != null && battleData.player_data.Length > 1 && GuiQuquBattleSystem.instance.playId != battleData.time_stamp)
+                if (battleData.player_data != null && battleData.player_data.Length > 1)
                 {
                     string[] ss = battleData.battleFlag.Split('｜');
                     GuiQuquBattleSystem.instance.actorTyp = (GuiQuquBattleSystem.ActorTyp)int.Parse(ss[ss.Length - 3]);
@@ -734,13 +780,13 @@ namespace GuiQuquAdventure
                 }
             }
 
-            for (int i = 0; i < t.Length; i++)
+            if (GUI.Button(new Rect(60 + 60 * 0, 10, 40, 25), "设置"))
             {
-                if (GUI.Button(new Rect(60+60*i, 10, 40, 25), "t"+i))
-                {
-                    t[i].anchoredPosition = new Vector2(float.Parse(x), float.Parse(y));
-                    t[i].localScale = Vector3.one * float.Parse(s);
-                }
+                SetQuquAndBet();
+            }
+            if (GUI.Button(new Rect(60 + 60 * 1, 10, 40, 25), "返回"))
+            {
+                OnClickClose();
             }
         }
 
@@ -786,6 +832,15 @@ namespace GuiQuquAdventure
                 self.desk_idx = -1;
                 GetData();
             }
+        }
+
+        void SetHallActive(bool show)
+        {
+            all.SetActive(show);
+            if (!show)
+                UIMove.instance.CloseGUI();
+            else
+                UIMove.instance.ShowGUI();
         }
     }
 }
