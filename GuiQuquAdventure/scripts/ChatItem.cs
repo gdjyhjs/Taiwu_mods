@@ -32,10 +32,10 @@ namespace GuiQuquAdventure
                 gameObject.SetActive(true);
             }
             text.text = chatData.name + "：" + chatData.content;
+            SetColor(chatData.ip);
+
             LayoutRebuilder.ForceRebuildLayoutImmediate(rText);
             rtf.sizeDelta = new Vector2(rtf.sizeDelta.x, rText.sizeDelta.y + 10);
-
-            SetColor(chatData.ip);
         }
 
         void SetColor(string ip)

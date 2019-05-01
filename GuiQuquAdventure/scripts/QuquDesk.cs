@@ -217,7 +217,7 @@ namespace GuiQuquAdventure
             {
                 last_t = t;
                 int desk_level = self.desk_idx / 10;
-                string desk_des = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{(self.desk_idx + 1)}{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
+                string desk_des = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
                 if (QuquDesk.instance.no_operation > 0)
                 {
                     switch (self.ready)

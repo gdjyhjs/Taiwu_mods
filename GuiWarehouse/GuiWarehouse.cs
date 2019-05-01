@@ -252,8 +252,8 @@ namespace GuiWarehouse
                     DateFile.instance.ChangeTwoActorItem(-999, DateFile.instance.MianActorID(), itemId, num, -1);
                 }
                 Main.OnChangeItem = true;
-                Warehouse_UpdateActorItems_Patch.Prefix(true, Warehouse.instance.actorItemTyp);
-                Warehouse_UpdateActorItems_Patch.Prefix(false, Warehouse.instance.warehouseItemTyp);
+                Warehouse_UpdateActorItems_Patch.Prefix(true, Warehouse.instance.actorItemType);
+                Warehouse_UpdateActorItems_Patch.Prefix(false, Warehouse.instance.warehouseItemType);
                 Main.OnChangeItem = false;
                 return false;
             }
@@ -289,8 +289,8 @@ namespace GuiWarehouse
 
             public static void UpdateData()
             {
-                Prefix(true, Warehouse.instance.actorItemTyp);
-                Prefix(false, Warehouse.instance.warehouseItemTyp);
+                Prefix(true, Warehouse.instance.actorItemType);
+                Prefix(false, Warehouse.instance.warehouseItemType);
             }
 
             public static void SetNewWarehouse(bool active)
@@ -368,11 +368,11 @@ namespace GuiWarehouse
                     }
 
 
-                    if (Warehouse.instance.actorItemTyp != 0 && Warehouse.instance.actorItemTyp != typ)
+                    if (Warehouse.instance.actorItemType != 0 && Warehouse.instance.actorItemType != typ)
                     {
                         Warehouse.instance.actorItemToggle[typ].isOn = true;
                     }
-                    Warehouse.instance.actorItemTyp = typ;
+                    Warehouse.instance.actorItemType = typ;
 
                     int num2 = DateFile.instance.MianActorID();
                     int maxItemSize = ActorMenu.instance.GetMaxItemSize(num2);
@@ -408,11 +408,11 @@ namespace GuiWarehouse
                         }
                     }
 
-                    if (Warehouse.instance.warehouseItemTyp != 0 && Warehouse.instance.warehouseItemTyp != typ)
+                    if (Warehouse.instance.warehouseItemType != 0 && Warehouse.instance.warehouseItemType != typ)
                     {
                         Warehouse.instance.warehouseItemToggle[typ].isOn = true;
                     }
-                    Warehouse.instance.warehouseItemTyp = typ;
+                    Warehouse.instance.warehouseItemType = typ;
 
                     int num4 = -999;
                     int warehouseMaxSize = Warehouse.instance.GetWarehouseMaxSize();
@@ -450,7 +450,7 @@ namespace GuiWarehouse
             {
                 if(Main.settings.levelClassify==0
                     || ((Main.settings.bookClassify == 0) && (warehouse.showBookClassify[typ] == 1))
-                    //||((Main.settings.attrClassify == 0) && ((actor && warehouse.showAttrClassify[Warehouse.instance.actorItemTyp] == 1) || (!actor && warehouse.showAttrClassify[Warehouse.instance.warehouseItemTyp] == 1)))
+                    //||((Main.settings.attrClassify == 0) && ((actor && warehouse.showAttrClassify[Warehouse.instance.actorItemType] == 1) || (!actor && warehouse.showAttrClassify[Warehouse.instance.warehouseItemType] == 1)))
                     )
                 {
                     return new int[0];
@@ -458,7 +458,7 @@ namespace GuiWarehouse
 
                 bool needLevel = Main.MaxLevelClassify() != Main.settings.levelClassify;
                 bool needBook = Main.MaxBookClassify() != Main.settings.bookClassify && (warehouse.showBookClassify[typ] == 1);
-                //bool needAttr = Main.MaxAttrClassify() != Main.settings.attrClassify && ((actor && warehouse.showAttrClassify[Warehouse.instance.actorItemTyp] == 1) || (!actor && warehouse.showAttrClassify[Warehouse.instance.warehouseItemTyp] == 1));
+                //bool needAttr = Main.MaxAttrClassify() != Main.settings.attrClassify && ((actor && warehouse.showAttrClassify[Warehouse.instance.actorItemType] == 1) || (!actor && warehouse.showAttrClassify[Warehouse.instance.warehouseItemType] == 1));
                 bool needSearch = (!string.IsNullOrEmpty(Main.keyWords));
                 if (typ == 0
                     && !needLevel
@@ -612,11 +612,11 @@ namespace GuiWarehouse
                 if (actor)
                 {
                     int num2 = DateFile.instance.MianActorID();
-                    if (_this.actorItemTyp != 0 && _this.actorItemTyp != typ)
+                    if (_this.actorItemType != 0 && _this.actorItemType != typ)
                     {
                         _this.actorItemToggle[typ].isOn = true;
                     }
-                    _this.actorItemTyp = typ;
+                    _this.actorItemType = typ;
                     bool flag = HomeSystem.instance.homeMapPartId != DateFile.instance.mianPartId || HomeSystem.instance.homeMapPlaceId != DateFile.instance.mianPlaceId;
                     int childCount = _this.actorItemHolder[typ].childCount;
                     List<int> list = new List<int>(DateFile.instance.GetItemSort(new List<int>(ActorMenu.instance.GetActorItems(num2, 0, false).Keys)));
@@ -664,11 +664,11 @@ namespace GuiWarehouse
                 else
                 {
                     int num4 = -999;
-                    if (_this.warehouseItemTyp != 0 && _this.warehouseItemTyp != typ)
+                    if (_this.warehouseItemType != 0 && _this.warehouseItemType != typ)
                     {
                         _this.warehouseItemToggle[typ].isOn = true;
                     }
-                    _this.warehouseItemTyp = typ;
+                    _this.warehouseItemType = typ;
                     bool cantTake = HomeSystem.instance.homeMapPartId != DateFile.instance.mianPartId || HomeSystem.instance.homeMapPlaceId != DateFile.instance.mianPlaceId;
                     int childCount2 = _this.warehouseItemHolder[typ].childCount;
                     List<int> list2 = new List<int>(DateFile.instance.GetItemSort(new List<int>(ActorMenu.instance.GetActorItems(num4, 0, false).Keys)));

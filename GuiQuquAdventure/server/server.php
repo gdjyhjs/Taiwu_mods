@@ -44,12 +44,12 @@ $new_err_list = array(
 
 
 $user_time_stamp = msectime(); // 时间 毫秒
-$off_line_time = 30000; // 脱机时间
-$battle_max_time = 1800000; // 战斗最多保存时间
+$off_line_time = 1800000011; // 脱机时间
+$battle_interval_time = 30000; // 战斗间隔时间 防止连续触发战斗
 $user_ip = get_ip().".".$name;
 $redis = new Redis();
 $redis->connect('127.0.0.1', '6379');
-$redis->auth('密码'); //密码验证
+$redis->auth('123456'); //密码验证
 $key_player = "cricket_battle_player";
 $key_room = "cricket_battle_room";
 $key_desk = "cricket_battle_desk";
@@ -260,7 +260,11 @@ function SetOnLinePlayer($hall_data,$name,$ip,$level,$desk_idx,$observer,$save_d
 function GetRoomPeopleNum($player_data){
 	$array = array();
 	foreach ($player_data as $key => $value) {
-		$array[$value['level']] = (isset($array[$value['level']])?$array[$value['level']]:0) + 1;
+		$level = $value['level'];
+		if($level == -1 && $value['desk_idx'] != -1){
+			$level = intval($value['desk_idx']/100);
+		}
+		$array[$level] = (isset($array[$level])?$array[$level]:0) + 1;
 	}
 	return $array;
 }
@@ -269,7 +273,7 @@ function GetRoomPeopleNum($player_data){
 function GetRoomProple($player_data, $room_idx){
 	$array = array();
 	foreach ($player_data as $key => $value) {
-		if($value['level'] == $room_idx){
+		if($value['level'] == $room_idx || (intval($value['desk_idx']/100) == $room_idx && $value['desk_idx'] > -1)){
 			array_push($array,$value);//添加元素
 		}
 	}
@@ -458,7 +462,15 @@ if($msg < 10001 || $msg > 10003){
 	$hall_data = GetHallData(0);
 	$hall_data['player_data'] = ClearOffLinePlayer($hall_data['player_data']);
 	$hall_data = SetOnLinePlayer($hall_data,$name,$user_ip,-1,$desk_idx,$observer,true,$image); // 更新在线
+
+	// $message = "";
 	if( $new_err == -1 ){
+		$hall_data['player_data'][$user_ip]['ready'] = $ready;
+		$hall_data['player_data'][$user_ip]['bet'] = $bet;
+		$hall_data['player_data'][$user_ip]['observer'] = $observer;
+		$hall_data['player_data'][$user_ip]['ququ'] = explode(',',$ququ);
+
+		
 		// 聊天
 		if(isset($_POST['chat_content'])){
 			$chat_content = htmlspecialchars($_POST['chat_content']);
@@ -466,53 +478,58 @@ if($msg < 10001 || $msg > 10003){
 			$content_param = isset($_POST['content_param'])? htmlspecialchars($_POST['content_param']) : "";
 			$chat_record = GetChatData($name,$user_ip,$chat_content,$content_param,-1,$desk_idx);
 			$hall_data = AddChatRecord($hall_data, $chat_record);
-			$hall_data['player_data'][$user_ip]['ready'] = $ready;
-			$hall_data['player_data'][$user_ip]['bet'] = $bet;
-			$hall_data['player_data'][$user_ip]['observer'] = $observer;
-			$hall_data['player_data'][$user_ip]['ququ'] = explode(',',$ququ);
 			SaveData($GLOBALS['key_chat'], $hall_data['chat_data']);
 		}
 
 
 		$desk_data = $hall_data['desk_data'][$desk_idx]; // 桌子数据
+		// $message = $message . (isset($hall_data['player_data'][$desk_data['player_data'][0]]) && isset($hall_data['player_data'][$desk_data['player_data'][1]]) ? "true":"false") . " 判断是否存在玩家\n";
 		if(isset($hall_data['player_data'][$desk_data['player_data'][0]]) && isset($hall_data['player_data'][$desk_data['player_data'][1]])){
-			$left_player = $hall_data['player_data'][$desk_data['player_data'][0]];
-			$right_player = $hall_data['player_data'][$desk_data['player_data'][1]];
-			// 开始战斗
-			if($left_player['ready'] == 2 && $right_player['ready'] == 2){ // 都准备好了
-				$people_flag = array();
-				foreach ($desk_data['player_data'] as $key => $flag_ip) { // 记录这场战斗的参与者
-					if($flag_ip != 0){
-						$player = $hall_data['player_data'][$flag_ip]; // 拿到这个玩家的数据
+			// $message = $message . ($desk_data['battle_data'] != 0 && ($desk_data['battle_data']['time_stamp'] + $battle_interval_time) > $user_time_stamp  ? "true":"false") . " 战斗时间判断\n";
 
-						$item_id = $player['bet']; // 赌注物品id
+			// $message = $message .  ($desk_data['battle_data'] == 0 ? "true" : "false"). " 上一场战斗空吗\n";
+			// if ($desk_data['battle_data'] != 0){ $message = $message .  "上次战斗时间：".$desk_data['battle_data']['time_stamp'] . " 用户时间:".$user_time_stamp." 有上一场战斗吗\n"; }
+			if($desk_data['battle_data'] == 0 || ($desk_data['battle_data']['time_stamp'] + $battle_interval_time) < $user_time_stamp){
+				$left_player = $hall_data['player_data'][$desk_data['player_data'][0]];
+				$right_player = $hall_data['player_data'][$desk_data['player_data'][1]];
+				// $message = $message .  $left_player['ready']." ".$right_player['ready']. " ready\n";
+				// 开始战斗
+				if($left_player['ready'] == 2 && $right_player['ready'] == 2){ // 都准备好了
+					$people_flag = array();
+					foreach ($desk_data['player_data'] as $key => $flag_ip) { // 记录这场战斗的参与者
+						if($flag_ip != 0){
+							$player = $hall_data['player_data'][$flag_ip]; // 拿到这个玩家的数据
 
-						$bet_flag = 9; // 押了0号还是1号   9是没有押注的普通观众
+							$bet_item = $player['bet']; // 赌注物品id
 
-						if($left_player['ip'] == $flag_ip){ // 0号对战者
-							$bet_flag = 0;
-							if($desk_data['typ'] == 0){
-								$item_id = $right_player['bet']; // 获得对方的押注
+							$bet_flag = 9; // 押了0号还是1号   9是没有押注的普通观众
+
+							if($left_player['ip'] == $flag_ip){ // 0号对战者
+								$bet_flag = 0;
+								if($desk_data['typ'] == 0){
+									$bet_item = $right_player['bet']; // 获得对方的押注
+								}
+							}elseif($right_player['ip'] == $flag_ip){ // 1号对战者
+								$bet_flag = 1;
+								if($desk_data['typ'] == 0){
+									$bet_item = $left_player['bet']; // 获得对方的押注
+								}
+							}elseif($player['observer'] == 2){ // 押了0号的观战者
+								$bet_flag = 2;
+							}elseif($player['observer'] == 3){ // 押了1号的观战者
+								$bet_flag = 3;
 							}
-						}elseif($right_player['ip'] == $flag_ip){ // 1号对战者
-							$bet_flag = 1;
-							if($desk_data['typ'] == 0){
-								$item_id = $left_player['bet']; // 获得对方的押注
-							}
-						}elseif($player['observer'] == 2){ // 押了0号的观战者
-							$bet_flag = 2;
-						}elseif($player['observer'] == 3){ // 押了1号的观战者
-							$bet_flag = 3;
+
+							$people_flag[$flag_ip] = $bet_item ."｜". $bet_flag."｜".$desk_data['typ']."｜".intval($desk_data['idx']%100/10);
+							$hall_data['player_data'][$flag_ip]['ready'] = 0;
 						}
-						$people_flag[$flag_ip] = $bet * 10 + $bet_flag;
-						$hall_data['player_data'][$flag_ip]['ready'] = 0;
 					}
+					$battle_data = GetBattleData($left_player, $right_player, $people_flag);
+					$desk_data['battle_data'] = $battle_data; // 覆盖记录为最近一场战斗
+					$hall_data['desk_data'][$desk_idx] = $desk_data;
+					$hall_data['player_data'][$desk_data['player_data'][0]]['ready'] = 0;
+					$hall_data['player_data'][$desk_data['player_data'][1]]['ready'] = 0;
 				}
-				$battle_data = GetBattleData($left_player, $right_player, $people_flag);
-				$desk_data['battle_data'] = $battle_data; // 覆盖记录为最近一场战斗
-				$hall_data['desk_data'][$desk_idx] = $desk_data;
-				$hall_data['player_data'][$desk_data['player_data'][0]]['ready'] = 0;
-				$hall_data['player_data'][$desk_data['player_data'][1]]['ready'] = 0;
 			}
 		}
 
@@ -565,9 +582,30 @@ if($msg < 10001 || $msg > 10003){
 		}
 		$battle_data = $desk_data['battle_data'];
 		$battle_count = 0;
-		if($battle_data!=0 && $battle_data['time_stamp'] > $lbts){
-			$battle_count = 1;
+		$battle_flag = 0;
+
+
+
+		//判断是否需要播放战斗
+		if($battle_data!=0){
+			$observer_list = $hall_data['desk_data'][$desk_idx]['battle_data']['observer'];
+			if(isset($observer_list[$user_ip])){ // 需要播放战斗
+				$battle_flag = $observer_list[$user_ip]; // 播放战斗 赌注.参与者类型.桌子类型.桌子等级
+				unset($hall_data['desk_data'][$desk_idx]['battle_data']['observer'][$user_ip]);
+				SaveData($GLOBALS['key_desk'], $hall_data['desk_data']); // 保存桌子战斗数据
+				if ($hall_data['player_data'][$user_ip]['ready'] != 0){
+					$hall_data['player_data'][$user_ip]['ready'] =0;
+					SaveData($GLOBALS['key_player'], $hall_data['player_data']); // 保存玩家准备数据	
+				}
+				$battle_count = 1;
+				// $message="触发战斗";
+			}else{
+				$battle_count = 0; // 不播放战斗
+			}
+		}else{
+			$battle_count = 0; // 不播放战斗
 		}
+
 
 		$data[$pos++] = $battle_count; // 战斗数量
 		if($battle_count > 0){
@@ -597,19 +635,9 @@ if($msg < 10001 || $msg > 10003){
 			$data[$pos++] = $value['content']; // 发言内容
 			$data[$pos++] = $value['param']; // 发言参数
 		}
-		//判断是否需要播放战斗
-		$observer_list = $hall_data['desk_data'][$desk_idx]['battle_data']['observer'];
-		if(isset($observer_list[$user_ip])){ // 需要播放战斗
-			$data[$pos++] = $observer_list[$user_ip]; // 播放战斗 赌注*10 + 参与者类型
-			unset($hall_data['desk_data'][$desk_idx]['battle_data']['observer'][$user_ip]);
-			SaveData($GLOBALS['key_desk'], $hall_data['desk_data']); // 保存桌子战斗数据
-			if ($hall_data['player_data'][$user_ip]['ready'] != 0){
-				$hall_data['player_data'][$user_ip]['ready'] =0;
-				SaveData($GLOBALS['key_player'], $hall_data['player_data']); // 保存玩家准备数据	
-			}
-		}else{
-			$data[$pos++] = 0; // 不播放战斗
-		}
+		//写入战斗标识
+		$data[$pos++] = $battle_flag; 
+		// $data[$pos++] = $message;
 	}
 	echo implode('|', $data);
 

@@ -765,22 +765,86 @@ namespace GuiTest
         ////         return true;
         ////     }
         //// }
-        //[HarmonyPatch(typeof(QuquBattleSystem), "Awake")]
-        //public static class Awake
+        //[HarmonyPatch(typeof(DateFile), "AddInjury")]
+        //public static class AddInjury
         //{
-        //    public static bool Prefix()
+        //    public static bool Prefix(int key, int id, int power, bool setValue = false)
         //    {
-        //        Log("Awake");
-        //        return true;
+        //        if (DateFile.instance.actorInjuryDate.ContainsKey(key))
+        //            return true;
+        //        else
+        //            return false;
         //    }
         //}
-        //[HarmonyPatch(typeof(QuquBattleSystem), "Start")]
-        //public static class Start
+        //[HarmonyPatch(typeof(HomeSystem), "GetBuildingNeighbor")]
+        //public static class GetBuildingNeighbor
         //{
-        //    public static bool Prefix()
+        //    public static bool Prefix(int partId, int placeId, int buildingIndex, ref int[] __result, int size = 1)
         //    {
-        //        Log("Start");
-        //        return true;
+        //        Log(" partId="+ partId+ " placeId=" + placeId + " buildingIndex=" + buildingIndex + " size=" + size);
+
+
+        //        int num = DateFile.instance.ParseInt(DateFile.instance.GetNewMapDate(partId, placeId, 32));
+        //        if (size > 1)
+        //        {
+        //            int[] array = new int[12]
+        //            {
+        //            buildingIndex - 1,
+        //            buildingIndex + 1,
+        //            buildingIndex - num,
+        //            buildingIndex + num,
+        //            buildingIndex - num - 1,
+        //            buildingIndex - num + 1,
+        //            buildingIndex + num - 1,
+        //            buildingIndex + num + 1,
+        //            buildingIndex - 2,
+        //            buildingIndex + 2,
+        //            buildingIndex - num * 2,
+        //            buildingIndex + num * 2
+        //            };
+        //            if (num==0||buildingIndex % num == 0)
+        //            {
+        //                array[0] = -1;
+        //                array[4] = -1;
+        //                array[6] = -1;
+        //                array[8] = -1;
+        //            }
+        //            if (num == 0 || (buildingIndex + 1) % num == 0)
+        //            {
+        //                array[1] = -1;
+        //                array[5] = -1;
+        //                array[7] = -1;
+        //                array[9] = -1;
+        //            }
+        //            if (num == 0 || (buildingIndex - 1) % num == 0)
+        //            {
+        //                array[8] = -1;
+        //            }
+        //            if (buildingIndex + 2 % num == 0)
+        //            {
+        //                array[9] = -1;
+        //            }
+        //            __result =  array;
+        //            return false;
+        //        }
+        //        int[] array2 = new int[4]
+        //        {
+        //        buildingIndex - 1,
+        //        buildingIndex + 1,
+        //        buildingIndex - num,
+        //        buildingIndex + num
+        //        };
+        //        if (num == 0 || buildingIndex % num == 0)
+        //        {
+        //            array2[0] = -1;
+        //        }
+        //        if (num == 0 || (buildingIndex + 1) % num == 0)
+        //        {
+        //            array2[1] = -1;
+        //        }
+        //        __result = array2;
+
+        //        return false;
         //    }
         //}
 

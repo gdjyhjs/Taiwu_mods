@@ -87,7 +87,26 @@ namespace GuiQuquAdventure
                 }
             }
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
             GUILayout.Label(make_message);
+            if (GUILayout.Button("消除！", GUILayout.Width(100)))
+            {
+                GameObject gui = GameObject.Find("GUI");
+                if (gui)
+                {
+                    Transform WindowMask = gui.transform.Find("WindowMask");
+                    if (WindowMask)
+                    {
+                        WindowMask.gameObject.SetActive(!WindowMask.gameObject.activeSelf);
+                    }
+                }
+            }
+            if (GUILayout.Button("卡战斗时点击关闭战斗"))
+            {
+                if (QuquHall.instance)
+                    QuquHall.instance.CloseQuquBattle();
+            }
+            GUILayout.EndHorizontal();
         }
 
         public static bool OnToggle(UnityModManager.ModEntry modEntry, bool value)

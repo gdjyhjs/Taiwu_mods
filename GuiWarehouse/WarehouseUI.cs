@@ -164,11 +164,11 @@ namespace GuiWarehouse
 
                     int idx = 0;
                     SetSelectButton(Main.MaxLevelClassify(), levelClassify, ref Main.settings.levelClassify, ref idx, int1, int2, int3);
-                    if ((showBookClassify[Warehouse.instance.actorItemTyp] | showBookClassify[Warehouse.instance.warehouseItemTyp]) == 1)
+                    if ((showBookClassify[Warehouse.instance.actorItemType] | showBookClassify[Warehouse.instance.warehouseItemType]) == 1)
                     {
                         SetSelectButton(Main.MaxBookClassify(), bookClassify, ref Main.settings.bookClassify, ref idx, int1, int2, int3);
                     }
-                    //if ((showAttrClassify[Warehouse.instance.actorItemTyp] | showAttrClassify[Warehouse.instance.warehouseItemTyp]) == 1)
+                    //if ((showAttrClassify[Warehouse.instance.actorItemType] | showAttrClassify[Warehouse.instance.warehouseItemType]) == 1)
                     //{
                     //    SetSelectButton(Main.MaxAttrClassify(), attrClassify, ref Main.settings.attrClassify, ref idx, int1, int2, int3);
                     //}

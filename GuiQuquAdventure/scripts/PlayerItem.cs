@@ -83,12 +83,12 @@ namespace GuiQuquAdventure
             }
             else
             {
-                text.text += string.Format("\n<size=25>(正在{0}号桌中{1})</size>", playerData.desk_idx % 100 + 1, playerData.observer == 0 ? "对战" : "围观");
+                text.text += string.Format($"\n<size=25>(在{RoomDeskObj.GetDeskLevelName(playerData.desk_idx/10)}{(playerData.desk_idx % 10 + 1)}号桌</size>");
             }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rText);
-            rtf.sizeDelta = new Vector2(rtf.sizeDelta.x, rText.sizeDelta.y + 10);
 
             SetColor(playerData.ip);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rText);
+            rtf.sizeDelta = new Vector2(rtf.sizeDelta.x, rText.sizeDelta.y + 10);
 
             this.ip = playerData.ip;
             this.desk_idx = playerData.desk_idx;
