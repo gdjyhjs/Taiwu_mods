@@ -8,7 +8,6 @@ namespace GuiQuquAdventure
 {
     public class RoomDeskObj : MonoBehaviour
     {
-        readonly string des_format_str = "{0}{1}号桌\n<size=22><color=red>{2}\n{3}</color></size>";
         readonly string[] typ_name = new string[2]
         {
             "对赌桌",
@@ -86,7 +85,7 @@ namespace GuiQuquAdventure
                     break;
             }
 
-            this.des.text = string.Format(des_format_str, GetDeskLevelName(desk_level), desk_idx % 10 + 1, typ_name[typ], des);
+            this.des.text = $"{GetDeskLevelName(desk_level)}{desk_idx % 10 + 1}号桌\n<size=22><color=red>{typ_name[typ]}\n{des}</color></size>";
         }
 
         public static string GetDeskLevelName(int desk_level)

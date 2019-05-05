@@ -48,6 +48,21 @@ namespace GuiQuquAdventure
         int[] left_last_image = new int[20];
         int[] right_last_image = new int[20];
         public string observer_battleFlag; // 参与者赌注标识
+
+
+
+        static GameObject chatItemPrefab { get { return QuquChat.instance.prefab; } }
+        static int chatItemMax = -300;
+        static int chatItemMin = -800;
+        static int chatItemStart = 2150;
+        static int chatItemEnd = -130;
+        static float chatFlySpeed = 400;
+        float chatTime = 0;
+        public Queue<ChatData> chatDatas;
+        GameObject sendChatObj;
+        RectTransform sendChatTf;
+        public InputField inputField;
+
         /// <summary>
         /// 是否重播 重播不会结算奖励和惩罚
         /// </summary>
@@ -77,7 +92,7 @@ namespace GuiQuquAdventure
 
         public GameObject[] ququBattleBack;
 
-        private bool showQuquBattleWindow = false;
+        public bool showQuquBattleWindow = false;
 
         //public bool surrender = false;
         public bool save_ququ = false;
@@ -315,15 +330,19 @@ namespace GuiQuquAdventure
         /// </summary>
         public void ShowQuquBattleWindow()
         {
-            if (gameObject.activeSelf)
-                return;
 
-            long num = playId%100000000;
-            GuiRandom.InitSeed((int)num);// 初始化随机种子
-
-            // // Main.Logger.Log("ShowQuquBattleWindow 显示战斗窗口 |" + Time.time);
+            // // // // Main.Logger.Log("ShowQuquBattleWindow 显示战斗窗口 |" + Time.time);
             if (!showQuquBattleWindow)
             {
+                if (gameObject.activeSelf)
+                    return;
+
+                long num = playId % 100000000;
+                GuiRandom.InitSeed((int)num);// 初始化随机种子
+                chatDatas = new Queue<ChatData>();
+                chatTime = 0;
+                PlayerData.self.ready = -1;
+
                 showQuquBattleWindow = true;
                 for (int i = 0; i < setBattleSpeedToggle.Length; i++)
                 {
@@ -342,7 +361,7 @@ namespace GuiQuquAdventure
                     StorySystem.instance.ClossToStoryMenu();
                 }
                 UIMove.instance.CloseGUI();
-                // // Main.Logger.Log("0.25s |" + Time.time);
+                // // // // Main.Logger.Log("0.25s |" + Time.time);
                 Invoke("QuquBattleWindowOpend", 0.25f);
             }
         }
@@ -352,8 +371,9 @@ namespace GuiQuquAdventure
         /// </summary>
         public void QuquBattleWindowOpend()
         {
-            QuquHall.instance.all.SetActive(false);
-            // // Main.Logger.Log("QuquBattleWindowOpend 战斗窗口打开 ||" + Time.time);
+            QuquHall.instance.SetHallActive(false);
+            WorldMapSystem.instance.gameObject.SetActive(false);
+            // // // // Main.Logger.Log("QuquBattleWindowOpend 战斗窗口打开 ||" + Time.time);
             showQuquBattleWindow = false;
             TipsWindow.instance.showTipsTime = -100;
             YesOrNoWindow.instance.ShwoWindowMask(ququBattleWindow.transform, true);
@@ -366,7 +386,7 @@ namespace GuiQuquAdventure
             rightBack.transform.localPosition = new Vector3(1400f, 0f, 0f);
             ququBattleWindow.transform.localPosition = new Vector3(0f, 1200f, 0f);
             DateFile.instance.SystemAudioPlay(4, 1, 1f);
-            // // Main.Logger.Log("QuquBattleWindowOpend 战斗窗口打开!!!!!! ||" + Time.time);
+            // // // // Main.Logger.Log("QuquBattleWindowOpend 战斗窗口打开!!!!!! ||" + Time.time);
             ququBattleWindow.transform.DOLocalMoveY(0f, 0.2f).SetUpdate(true).OnComplete(SetActorAnimation);
         }
 
@@ -404,42 +424,51 @@ namespace GuiQuquAdventure
                 for (int i = 0; i < leftQuquId.Length; i++)
                 {
                     int itemId = leftQuquId[i];
-                    int color = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2002));
-                    int partId = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2003));
-                    // Main.Logger.Log(" color=" + color + " partId=" + partId);
-                    if ((color < 200) && partId == 0)
+                    if (itemId != -98)
                     {
-                        // 正常虫王
-                    }
-                    else if ((color > 200 && color < 300 && partId > 1000 && partId < 5000))
-                    {
-                        // 正常蛐蛐
-                    }
-                    else
-                    {
-                        t = "作弊警告";
-                        s += $"检查到使用的蛐蛐{ DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)), DateFile.instance.GetItemDate(itemId, 0)).Replace("\n","") }数据异常，保存失败！\n";
-                        cheat = true;
-                    }
-                    if((tmp_color1 == color && tmp_part1 == partId)|| (tmp_color2 == color && tmp_part2 == partId))
-                    {
-                        t = "系统提示";
-                        s += "请使用三只不同的蛐蛐出战！\n";
-                    }
-                    if (i == 0)
-                    {
-                        tmp_color1 = color;
-                        tmp_part1 = partId;
-                    }
-                    else if (i == 1)
-                    {
-                        tmp_color2 = color;
-                        tmp_part2 = partId;
+                        int color = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2002));
+                        int partId = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 2003));
+                        // // // Main.Logger.Log(" color=" + color + " partId=" + partId);
+                        if ((color >= 0 && color <= 21) && partId == 0)
+                        {
+                            // 正常异品或呆物
+                        }
+                        else if ((color >= 101 && color <= 106) && partId == 0)
+                        {
+                            // 正常真色
+                        }
+                        else if (color >= 201 && color <= 236 && ((partId >= 1001 && partId < 1018)|| (partId >= 2001 && partId < 2018)|| (partId >= 3001 && partId < 3018)|| (partId >= 4001 && partId < 4027)))
+                        {
+                            // 正常蛐蛐
+                        }
+                        else
+                        {
+                            t = "作弊警告";
+                            s += $"检查到使用的蛐蛐{ DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)), DateFile.instance.GetItemDate(itemId, 0)).Replace("\n", "") }数据异常，保存失败！\n";
+                            cheat = true;
+                        }
+                        if (((tmp_color1 == color && tmp_part1 == partId) || (tmp_color2 == color && tmp_part2 == partId))&& color!=0)
+                        {
+                            t = "系统提示";
+                            s += $"请使用三只不同的蛐蛐出战！只有呆物可以同时出战，你可以选择三只呆物一起出战！蛐蛐{ DateFile.instance.SetColoer(20001 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(itemId, 8)), DateFile.instance.GetItemDate(itemId, 0)).Replace("\n", "") }重复了！\n";
+                            cheat = true;
+                        }
+                        if (i == 0)
+                        {
+                            tmp_color1 = color;
+                            tmp_part1 = partId;
+                        }
+                        else if (i == 1)
+                        {
+                            tmp_color2 = color;
+                            tmp_part2 = partId;
+                        }
                     }
                 }
+
                 if (!cheat)
                 {
-                    // // Main.Logger.Log("保存选择的蛐蛐和赌注");
+                    // // // // Main.Logger.Log("保存选择的蛐蛐和赌注");
                     leftPlayer.bet_id = left_bet_id;
                     leftPlayer.bet_typ = left_bet_typ;
                     leftPlayer.SetBet();
@@ -452,7 +481,8 @@ namespace GuiQuquAdventure
                 }
                 else
                 {
-                    YesOrNoWindow.instance.SetYesOrNoWindow(-1, "作弊警告!", s, false, true);
+                    PlayerData.client_ids = new int[] { -98, -98, -98 };
+                    YesOrNoWindow.instance.SetYesOrNoWindow(-1, t, s, false, true);
                 }
             }
 
@@ -512,16 +542,17 @@ namespace GuiQuquAdventure
             ququBattleWindow.transform.DOLocalMoveY(1200f, 0.3f).SetUpdate(isIndependentUpdate: true).OnComplete(CloseBattleWindowDone);
 
 
-            QuquHall.instance.SetHallActive(true);
         }
 
         private void CloseBattleWindowDone()
         {
             bodyActorId = 0;
+            PlayerData.self.ready = 0;
             ququBattleWindow.SetActive(value: false);
             YesOrNoWindow.instance.ShwoWindowMask(ququBattleWindow.transform, on: false);
             UIMove.instance.ShowGUI();
             DateFile.instance.UpdatePlaceBgm(DateFile.instance.mianPartId, DateFile.instance.mianPlaceId);
+            QuquHall.instance.SetHallActive(true);
         }
 
         /// <summary>
@@ -529,21 +560,21 @@ namespace GuiQuquAdventure
         /// </summary>
         private void SetQuquBattle()
         {
-            // // Main.Logger.Log("SetQuquBattle 设置战斗 |||" + Time.time);
+            // // // // Main.Logger.Log("SetQuquBattle 设置战斗 |||" + Time.time);
             ququBattleTurn = 0;
             //surrender = false;
             save_ququ = false;
             actorQuquCallTime = new int[3]
             {
-            GuiRandom.Range(0, 300),
-            GuiRandom.Range(0, 300),
-            GuiRandom.Range(0, 300)
+            Random.Range(0, 300),
+            Random.Range(0, 300),
+            Random.Range(0, 300)
             };
             enemyQuquCallTime = new int[3]
             {
-            GuiRandom.Range(0, 300),
-            GuiRandom.Range(0, 300),
-            GuiRandom.Range(0, 300)
+            Random.Range(0, 300),
+            Random.Range(0, 300),
+            Random.Range(0, 300)
             };
             //int num0 = DateFile.instance.MianActorID();
             //int num2 = DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][1]);
@@ -563,10 +594,10 @@ namespace GuiQuquAdventure
             }
             startBattleButton.interactable = rightPlayer == null;
             loseBattleButton.interactable = rightPlayer == null;
-            // // Main.Logger.Log("AAA");
+            // // // // Main.Logger.Log("AAA");
             for (int k = 0; k < battleValue.Length; k++)
             {
-                // // Main.Logger.Log("AAA" + k);
+                // // // // Main.Logger.Log("AAA" + k);
                 hideQuquImage[k].transform.localScale = new Vector3(1f, 1f, 1f);
                 nextButton[k].gameObject.SetActive(value: false);
                 nextButtonMask[k].GetComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
@@ -579,40 +610,40 @@ namespace GuiQuquAdventure
                 actorQuquDamageText[k].text = "";
                 enemyQuquDamageText[k].text = "";
             }
-            // // Main.Logger.Log("AAA222");
+            // // // // Main.Logger.Log("AAA222");
             //chooseActorButton.interactable = (DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][8]) == 1);
             chooseActorButton.interactable = false; // rightPlayer == null;
             actorBodyImage.GetComponent<Button>().interactable = rightPlayer == null;
 
             //actorFace.SetActorFace(num0);
             //enemyFace.SetActorFace(num3);
-            // // Main.Logger.Log("AAA444");
+            // // // // Main.Logger.Log("AAA444");
             if (actorFace == null)
             {
-                // // Main.Logger.Log("AAA*&@%^@%^@&*");
+                // // // // Main.Logger.Log("AAA*&@%^@%^@&*");
             }
             Tools.UpdateFace(left_last_image,actorFace, leftPlayer.age, leftPlayer.gender, leftPlayer.actorGenderChange, leftPlayer.faceDate, leftPlayer.faceColor, leftPlayer.clotheId, true);
-            // // Main.Logger.Log("AAA!!!");
-            actorNameText.text = leftPlayer.name; //  DateFile.instance.GetActorName(num0);
-            // // Main.Logger.Log("AAA@@@");
+            // // // // Main.Logger.Log("AAA!!!");
+            actorNameText.text = leftPlayer.player_name; //  DateFile.instance.GetActorName(num0);
+            // // // // Main.Logger.Log("AAA@@@");
 
             bool show_enemy = null != rightPlayer;
-            // // Main.Logger.Log("AAA###" + show_enemy);
+            // // // // Main.Logger.Log("AAA###" + show_enemy);
             if (show_enemy)
             {
                 Tools.UpdateFace(right_last_image,enemyFace, rightPlayer.age, rightPlayer.gender, rightPlayer.actorGenderChange, rightPlayer.faceDate, rightPlayer.faceColor, rightPlayer.clotheId, true);
-                enemyNameText.text = rightPlayer.name; //  DateFile.instance.GetActorName(num3);
+                enemyNameText.text = rightPlayer.player_name; //  DateFile.instance.GetActorName(num3);
             }
             else
             {
                 enemyNameText.text = "";
             }
-            // // Main.Logger.Log("AAA&&&");
+            // // // // Main.Logger.Log("AAA&&&");
             if (enemyFace.gameObject.activeSelf != show_enemy)
             {
                 enemyFace.gameObject.SetActive(show_enemy);
             }
-            // // Main.Logger.Log("AAA666");
+            // // // // Main.Logger.Log("AAA666");
             //enemyBodyTyp = DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][3]);
             //enemyBodySize = 1;
             //int num4 = DateFile.instance.ParseInt(DateFile.instance.cricketBattleDate[______ququBattleId][5]);
@@ -792,10 +823,10 @@ namespace GuiQuquAdventure
             }
 
             setActorBodyId = 0;
-            // // Main.Logger.Log("AAA777");
+            // // // // Main.Logger.Log("AAA777");
             UpdateActorBet(leftPlayer, 0);
             UpdateActorBet(rightPlayer, 1);
-            // // Main.Logger.Log("AAA999");
+            // // // // Main.Logger.Log("AAA999");
             actorQuquHp = new int[3];
             enemyQuquHp = new int[3];
             actorQuquSp = new int[3];
@@ -826,13 +857,13 @@ namespace GuiQuquAdventure
 
             if (rightPlayer != null) // 要开战 创建临时蛐蛐
             {
-                // // Main.Logger.Log("要开战 创建临时蛐蛐");
+                // // // // Main.Logger.Log("要开战 创建临时蛐蛐");
                 for (int i = 0; i < 3; i++)
                 {
                     //int actorQuquColor = leftPlayer.GetQuquColor(i);
                     //int actorQuquPartId = leftPlayer.GetQuquPartId(i);
                     //string actorQuquInjurys = leftPlayer.GetQuquInjurys(i);
-                    // // Main.Logger.Log(i + "玩家" + actorQuquColor + " " + actorQuquPartId + " " + actorQuquInjurys);
+                    // // // // Main.Logger.Log(i + "玩家" + actorQuquColor + " " + actorQuquPartId + " " + actorQuquInjurys);
                     leftQuquId[i] = leftPlayer.GetBattleQuquId(i, -10, 0);
                     //GetQuquWindow.instance.MakeQuqu(leftQuquId[i], actorQuquColor, actorQuquPartId);
                     //DateFile.instance.itemsDate[leftQuquId[i]][2004] = actorQuquInjurys;
@@ -841,19 +872,19 @@ namespace GuiQuquAdventure
                     //int enemyQuquPartId = rightPlayer.GetQuquPartId(i);
                     //string enemyQuquInjurys = rightPlayer.GetQuquInjurys(i);
                     rightQuquId[i] = rightPlayer.GetBattleQuquId(i, -20,0);
-                    // // Main.Logger.Log(i + "敌人" + enemyQuquColor + " " + enemyQuquPartId + " " + enemyQuquInjurys);
+                    // // // // Main.Logger.Log(i + "敌人" + enemyQuquColor + " " + enemyQuquPartId + " " + enemyQuquInjurys);
                     //GetQuquWindow.instance.MakeQuqu(rightQuquId[i], enemyQuquColor, enemyQuquPartId);
                     //DateFile.instance.itemsDate[rightQuquId[i]][2004] = enemyQuquInjurys;
                 }
-                // // Main.Logger.Log("左方蛐蛐" + leftQuquId[0] + leftQuquId[1] + leftQuquId[2]);
-                // // Main.Logger.Log("右方蛐蛐" + rightQuquId[0] + rightQuquId[1] + rightQuquId[2]);
+                // // // // Main.Logger.Log("左方蛐蛐" + leftQuquId[0] + leftQuquId[1] + leftQuquId[2]);
+                // // // // Main.Logger.Log("右方蛐蛐" + rightQuquId[0] + rightQuquId[1] + rightQuquId[2]);
             }
             else // 玩家选择出战蛐蛐和赌注
             {
-                // // Main.Logger.Log("玩家选择出战蛐蛐和赌注");
+                // // // // Main.Logger.Log("玩家选择出战蛐蛐和赌注");
                 for (int i = 0; i < 3; i++)
                 {
-                    // // Main.Logger.Log(i + "玩家选择出战蛐蛐和赌注");
+                    // // // // Main.Logger.Log(i + "玩家选择出战蛐蛐和赌注");
                     leftQuquId[i] = PlayerData.client_ids[i];
                 }
             }
@@ -1050,12 +1081,12 @@ namespace GuiQuquAdventure
                 return;
             if (chooseBodyIsShow)
             {
-                // // Main.Logger.Log("关闭选择赌注类型");
+                // // // // Main.Logger.Log("关闭选择赌注类型");
                 CloseChooseBodyTyp();
             }
             else
             {
-                // // Main.Logger.Log("打开选择赌注");
+                // // // // Main.Logger.Log("打开选择赌注");
 
                 //int bet_typ = 5; // (enemyBodyTyp == 0) ? enemyBodyId : 5; //赌注类型
                 //int actor_has_num = ActorMenu.instance.ActorResource(DateFile.instance.MianActorID())[bet_typ]; // 玩家拥有的资源
@@ -1107,7 +1138,7 @@ namespace GuiQuquAdventure
             }
             if (bet_id == -98) // 设置空格子
             {
-                // // Main.Logger.Log(idx + " 设置空格子 " + (player == null ? "" : bet_id.ToString()));
+                // // // // Main.Logger.Log(idx + " 设置空格子 " + (player == null ? "" : bet_id.ToString()));
                 if (idx == 0) // 左侧
                 {
                     actorBodyImage.tag = "ActorItem";
@@ -1125,7 +1156,7 @@ namespace GuiQuquAdventure
             }
             else
             {
-                // // Main.Logger.Log(idx + " 设置賭注 " + (player == null ? "" : bet_id.ToString()));
+                // // // // Main.Logger.Log(idx + " 设置賭注 " + (player == null ? "" : bet_id.ToString()));
                 #region 原本设置主角赌注的代码
                 //switch (actorBodyTyp)
                 //{
@@ -1224,7 +1255,7 @@ namespace GuiQuquAdventure
 
         public void SetUseResourceButton()
         {
-            // // Main.Logger.Log("设置选择资源按钮");
+            // // // // Main.Logger.Log("设置选择资源按钮");
             getItemTyp = 2;
             GetResource();
             itemWindow.transform.DOPlayForward();
@@ -1246,7 +1277,7 @@ namespace GuiQuquAdventure
 
         public void SetUseItemButton()
         {
-            // // Main.Logger.Log("设置选择物品按钮");
+            // // // // Main.Logger.Log("设置选择物品按钮");
             getItemTyp = 1;
             GetItem();
             itemWindow.transform.DOPlayForward();
@@ -1375,7 +1406,7 @@ namespace GuiQuquAdventure
         {
             if (rightPlayer != null) // 对战中屏蔽选择蛐蛐
                 return;
-            // // Main.Logger.Log("选择蛐蛐"+ index);
+            // // // // Main.Logger.Log("选择蛐蛐"+ index);
             choseItemIndex = index;
             getItemTyp = 0;
             GetItem();
@@ -1397,7 +1428,7 @@ namespace GuiQuquAdventure
 
         public void CloseItemWindow()
         {
-            // // Main.Logger.Log("CloseItemWindow 关闭物品窗口");
+            // // // // Main.Logger.Log("CloseItemWindow 关闭物品窗口");
             itemWindow.transform.DOPlayBackwards();
             Component[] componentsInChildren = itemWindow.GetComponentsInChildren<Component>();
             Component[] array = componentsInChildren;
@@ -1451,7 +1482,7 @@ namespace GuiQuquAdventure
         /// </summary>
         private void GetItem()
         {
-            // // Main.Logger.Log("获取物品");
+            // // // // Main.Logger.Log("获取物品");
             RemoveItems();
             int main_actor_id = DateFile.instance.MianActorID();
             List<int> list = new List<int>(ActorMenu.instance.GetActorItems(main_actor_id).Keys); // 获取玩家背包物品
@@ -1521,7 +1552,7 @@ namespace GuiQuquAdventure
 
         public void SetItem()
         {
-            // // Main.Logger.Log(getItemTyp + "设置物品" + choseItemIndex + " choseItemId=" + choseItemId);
+            // // // // Main.Logger.Log(getItemTyp + "设置物品" + choseItemIndex + " choseItemId=" + choseItemId);
             if (getItemTyp == 0)
             {
                 leftQuquId[choseItemIndex] = choseItemId;
@@ -1619,7 +1650,7 @@ namespace GuiQuquAdventure
 
         public void StartQuquBattle()
         {
-            // // Main.Logger.Log(Time.time + " 开始蛐蛐对战");
+            // // // // Main.Logger.Log(Time.time + " 开始蛐蛐对战");
             leftWinTurn = 0;
             ququBattlePart = 2;
             startBattleWindow.SetActive(false); // 隐藏开始战斗窗口
@@ -1659,7 +1690,7 @@ namespace GuiQuquAdventure
 
         public void ShowStartBattleState()
         {
-            // // Main.Logger.Log(Time.time + " 显示开始战斗状态");
+            // // // // Main.Logger.Log(Time.time + " 显示开始战斗状态");
 
             int stateIndex = 0; // 0是双方都出手 1是左侧出手 2是右侧出手
             int left_level = DateFile.instance.ParseInt(DateFile.instance.GetItemDate(leftQuquId[ququBattleTurn], 8)); // 品级
@@ -1727,10 +1758,10 @@ namespace GuiQuquAdventure
             switch (stateIndex)
             {
                 case 1:
-                    s1 = rightPlayer.name + "的蛐蛐无牙无叫";
+                    s1 = rightPlayer.player_name + "的蛐蛐无牙无叫";
                     break;
                 case 2:
-                    s1 = leftPlayer.name + "的蛐蛐无牙无叫";
+                    s1 = leftPlayer.player_name + "的蛐蛐无牙无叫";
                     break;
                 default:
                     s1 = DateFile.instance.massageDate[8003][3].Split('|')[stateIndex]; // 双方有牙有叫
@@ -1738,28 +1769,28 @@ namespace GuiQuquAdventure
             }
             SetBattleStateText(s1, _delay5, 2f); // 
             _delay5 += 1.5f;
-            // // Main.Logger.Log(Time.time + " stateIndex=" + stateIndex);
+            // // // // Main.Logger.Log(Time.time + " stateIndex=" + stateIndex);
             switch (stateIndex)
             {
                 case 0:
                     SetBattleStateText(DateFile.instance.SetColoer(20008, DateFile.instance.massageDate[8003][2].Split('|')[1]), _delay5, 2f, 0); // 提闸开战
                     break;
                 case 1:
-                    SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.name + "胜"), _delay5, 3f, 1); // 左侧胜
+                    SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.player_name + "胜"), _delay5, 3f, 1); // 左侧胜
                     break;
                 case 2:
-                    SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.name + "胜"), _delay5, 3f, 2); // 左侧败
+                    SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.player_name + "胜"), _delay5, 3f, 2); // 左侧败
                     break;
             }
         }
 
         private void SetBattleStateText(string text, float delay, float size, int endTyp = -1)
         {
-            // // Main.Logger.Log(Time.time + " AAAStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
+            // // // // Main.Logger.Log(Time.time + " AAAStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
             battleStateText[ququBattleTurn].transform.DOScale(new Vector3(size, size, 1f), 0.1f).SetDelay(delay).SetEase(Ease.OutBack)
                 .OnStart(delegate
                 {
-                    // // Main.Logger.Log(Time.time + " BBBStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
+                    // // // // Main.Logger.Log(Time.time + " BBBStateTex=" + text + " endTyp=" + endTyp + " delay=" + delay);
                     battleStateText[ququBattleTurn].text = text;
                     battleStateText[ququBattleTurn].transform.localScale = new Vector3(0f, 0f, 1f);
                 });
@@ -1769,9 +1800,9 @@ namespace GuiQuquAdventure
 
         private IEnumerator BattleState(int endTyp, float waitTime)
         {
-            // // Main.Logger.Log(Time.time + " CCCendTyp=" + endTyp + " waitTime=" + waitTime);
+            // // // // Main.Logger.Log(Time.time + " CCCendTyp=" + endTyp + " waitTime=" + waitTime);
             yield return new WaitForSeconds(waitTime);
-            // // Main.Logger.Log(Time.time + " DDDendTyp=" + endTyp + " waitTime=" + waitTime);
+            // // // // Main.Logger.Log(Time.time + " DDDendTyp=" + endTyp + " waitTime=" + waitTime);
             if (endTyp == 0)
             {
                 battleStateText[ququBattleTurn].transform.DOScale(new Vector3(0f, 0f, 1f), 0.1f).SetDelay(0.8f).OnComplete(delegate
@@ -1801,7 +1832,7 @@ namespace GuiQuquAdventure
                     nextButton[i].gameObject.SetActive(i == ququBattleTurn);
                     if (i == ququBattleTurn)
                     {
-                        // // Main.Logger.Log("3秒后开始下一场");
+                        // // // // Main.Logger.Log("3秒后开始下一场");
                         //Invoke("BattleNextPart", 3);
                         StartCoroutine(NextBattle(i));
                     }
@@ -2053,7 +2084,7 @@ namespace GuiQuquAdventure
                             battleStateText[ququBattleTurn].text = "";
                             nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
                             {
-                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.name + "胜"), 0.4f, 3f, 2);
+                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.player_name + "胜"), 0.4f, 3f, 2);
                             });
                             Damage(defer, size, delay, text, textColor);
                             return;
@@ -2174,7 +2205,7 @@ namespace GuiQuquAdventure
                             battleStateText[ququBattleTurn].text = "";
                             nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
                             {
-                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.name + "胜"), 0.4f, 3f, 1);
+                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.player_name + "胜"), 0.4f, 3f, 1);
                             });
                             Damage(defer, size, delay, text, textColor);
                             return;
@@ -2267,7 +2298,7 @@ namespace GuiQuquAdventure
                             battleStateText[ququBattleTurn].text = "";
                             nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
                             {
-                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.name + "胜"), 0.4f, 3f, 2);
+                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 1 ? 20010 : (CheckCamp() == 0 ? 20005 : 20008), rightPlayer.player_name + "胜"), 0.4f, 3f, 2);
                             });
                         }
                     }
@@ -2282,7 +2313,7 @@ namespace GuiQuquAdventure
                             battleStateText[ququBattleTurn].text = "";
                             nextButtonMask[ququBattleTurn].GetComponent<Image>().DOColor(new Color(0f, 0f, 0f, 0.5f), 1f).OnComplete(delegate
                             {
-                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.name + "胜"), 0.4f, 3f, 1);
+                                SetBattleStateText(DateFile.instance.SetColoer(CheckCamp() != 0 ? 20010 : (CheckCamp() == 1 ? 20005 : 20008), leftPlayer.player_name + "胜"), 0.4f, 3f, 1);
                             });
                         }
                     }
@@ -2337,7 +2368,7 @@ namespace GuiQuquAdventure
 
         private void BattleEndWindow(int typ)
         {
-            Debug.Log(" typ: 0是左侧赢 1是右侧赢 "+ typ);
+            // Debug.Log(" typ: 0是左侧赢 1是右侧赢 "+ typ);
 
             // typ: 0是左侧赢 1是右侧赢
             battleEndBodyText.text = "";
@@ -2381,19 +2412,21 @@ namespace GuiQuquAdventure
 
             if (!replay)
             {
+                bool addRecord = false;
                 switch (actorTyp)
                 {
                     case ActorTyp.LeftPlayer:
                         heihei = typ == 0 ? 0 : 1;
                         bet_typ = leftPlayer.bet_typ;
+                        addRecord = true;
                         break;
                     case ActorTyp.RightPlayer:
                         heihei = typ == 1 ? 0 : 1;
                         bet_typ = rightPlayer.bet_typ;
+                        addRecord = true;
                         break;
                     case ActorTyp.LeftObserver:
                         heihei = typ == 0 ? 0 : 1;
-
                         break;
                     case ActorTyp.RightObserver:
                         heihei = typ == 1 ? 0 : 1;
@@ -2406,14 +2439,57 @@ namespace GuiQuquAdventure
 
                 //if (!replay)
                 //{
-                //    // Main.Logger.Log("扣除体力");
+                //    // // // Main.Logger.Log("扣除体力");
                 //    UIDate.instance.ChangeTime(false, 3);
                 //}
+                if (addRecord)
+                {
+                    DataFile.instance.AddWinRecord(heihei == 0);
+                    int[] color = new int[3];
+                    int[] partid = new int[3];
+                    for (int i = 0; i < PlayerData.client_ids.Length; i++)
+                    {
+                        int ququ_id = PlayerData.client_ids[i];
+                        color[i] = int.Parse(DateFile.instance.GetItemDate(ququ_id, 2002));
+                        partid[i] = int.Parse(DateFile.instance.GetItemDate(ququ_id, 2003));
+                    }
+                    DataFile.instance.AddQuquCount(color,partid);
+                }
+
+                int[] cpl = null;
+                if(leftPlayer.ip == PlayerData.self.ip)
+                {
+                    cpl = leftQuquId;
+                }
+                else if (rightPlayer.ip == PlayerData.self.ip)
+                {
+                    cpl = rightQuquId;
+                }
+                if(cpl != null)
+                {
+                    // 克隆数据
+                    for (int i = 0; i < cpl.Length; i++)
+                    {
+                        Dictionary<int, string> cpitem = DateFile.instance.itemsDate[cpl[i]];
+                        Dictionary<int, string> item = DateFile.instance.itemsDate[PlayerData.client_ids[i]];
+                        foreach (var key in cpitem.Keys)
+                        {
+                            if (item.ContainsKey(key))
+                            {
+                                item[key] = cpitem[key];
+                            }
+                            else
+                            {
+                                item.Add(key, cpitem[key]);
+                            }
+                        }
+                    }
+                }
             }
             if(heihei == 0) // 胜利 获得奖励
             {
                 //battleEndBodyText.text = enemyBodyNameText.text;
-                Debug.Log(" 胜利 获得奖励 " + observer_battleFlag);
+                // Debug.Log(" 胜利 获得奖励 " + observer_battleFlag);
                 PlayerData.GetBattleAttr(observer_battleFlag, -1, out int betId, out int betTyp, out ActorTyp actorTyp, out int deskTyp, out int deskLevel);
                 
                 switch (betTyp)
@@ -2447,7 +2523,7 @@ namespace GuiQuquAdventure
             {
                 //battleEndBodyText.text = actorBodyNameText.text;
                 PlayerData.GetBattleAttr(observer_battleFlag, 30, out int betId, out int betTyp, out ActorTyp actorTyp, out int deskTyp, out int deskLevel);
-                Debug.Log(" 失败 失去奖励 " + observer_battleFlag + " betId" + betId + " betTyp" + betTyp + " actorTyp" + actorTyp + " deskTyp" + deskTyp + " deskLevel" + deskLevel);
+                // Debug.Log(" 失败 失去奖励 " + observer_battleFlag + " betId" + betId + " betTyp" + betTyp + " actorTyp" + actorTyp + " deskTyp" + deskTyp + " deskLevel" + deskLevel);
                 switch (PlayerData.self.bet_typ)
                 {
                     case 0:
@@ -2456,7 +2532,7 @@ namespace GuiQuquAdventure
                         battleEndBodyText.text = DateFile.instance.resourceDate[PlayerData.self.bet_id][1] + " X " + -num;
                         break;
                     case 1:
-                        Debug.Log(" 失败 失去物品 " + PlayerData.client_bet);
+                        // Debug.Log(" 失败 失去物品 " + PlayerData.client_bet);
                         battleEndBodyText.text = DateFile.instance.GetItemDate(PlayerData.client_bet, 0) + " X 1";
                         DateFile.instance.LoseItem(DateFile.instance.MianActorID(), PlayerData.client_bet, 1, true);
                         break;
@@ -2684,14 +2760,37 @@ namespace GuiQuquAdventure
 
         private void Update()
         {
+            PlayerData.self.ready = rightPlayer == null ? -2 : -1;
             if (ququBattlePart == 1)
             {
                 UpdateBattleQuquCall();
             }
+            chatTime -= Time.deltaTime;
+            if (chatDatas!=null&& chatDatas.Count > 0&& chatTime<0)
+            {
+                chatTime = 3;
+                ChatFlyObj.AddChat(chatDatas.Dequeue());
+            }
         }
+
+
 
         public void Init()
         {
+
+            sendChatObj = Instantiate(QuquHall.instance.inputField.gameObject);
+            sendChatObj.SetActive(true);
+            sendChatTf = (RectTransform)sendChatObj.transform;
+            sendChatTf.SetParent(transform, false);
+            sendChatTf.anchoredPosition = new Vector2(-200, 50);
+            Button sendChatBtn = sendChatTf.Find("SendButton").GetComponent<Button>();
+            sendChatBtn.onClick.AddListener(QuquHall.instance.OnClickSendChat);
+            ChatFlyObj.pool = new Stack<ChatFlyObj>();
+            inputField = sendChatObj.GetComponent<InputField>();
+
+
+
+
             instance = this;
             Transform _transform = transform;
 
@@ -2926,11 +3025,11 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
             //    // 创建多个赌注按钮
             //    //Transform parent = _transform.Find("BattleActorBack/ChooseBodyWindow");
             //    //RectTransform bg = parent.parent as RectTransform;
-            //    //// // Main.Logger.Log("背景大小" + bg.sizeDelta);
+            //    //// // // // Main.Logger.Log("背景大小" + bg.sizeDelta);
             //    //bg.sizeDelta = new Vector2(bg.sizeDelta.x, bg.sizeDelta.y * 3);
             //    //for (int i = 0; i < 7; i++)
             //    //{
-            //    //    // // Main.Logger.Log("创建赌注资源" + i+ DateFile.instance.resourceDate[i][1]);
+            //    //    // // // // Main.Logger.Log("创建赌注资源" + i+ DateFile.instance.resourceDate[i][1]);
             //    //    GameObject go = useResourceButton.gameObject;
             //    //    if (i != 0)
             //    //        go = Instantiate(go);
@@ -2941,14 +3040,14 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
             //    //    t.text = DateFile.instance.resourceDate[i][1];
             //    //    Image img = rtf.GetComponent<Image>();
             //    //    img.sprite = GetSprites.instance.makeResourceIcon[DateFile.instance.ParseInt(DateFile.instance.resourceDate[i][98])];
-            //    //    // // Main.Logger.Log(rtf.anchoredPosition + "");
+            //    //    // // // // Main.Logger.Log(rtf.anchoredPosition + "");
             //    //    if (i != 0)
             //    //        rtf.anchoredPosition = new Vector2(-80 + 60 * ((i - 1) % 4), - 60 * ((i - 1) / 3));
             //    //}
             //}
             //catch (System.Exception e)
             //{
-            //    // // Main.Logger.Log("创建赌注资源报错" + e.Message);
+            //    // // // // Main.Logger.Log("创建赌注资源报错" + e.Message);
             //}
             needResourceText.text = "资源";
 
@@ -3004,6 +3103,89 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
                 nextButton[i].onClick.AddListener(BattleNextPart);
             }
         }
+
+
+        //GameObject chatItemPrefab { get { return QuquChat.instance.prefab; } }
+        //int chatItemMax = -300;
+        //int chatItemMin = -800;
+        //int chatItemStart = 2150;
+        //int chatItemEnd = -130;
+        //float chatTime = 0;
+        //public Queue<ChatData> chatDatas;
+        //GameObject sendChatObj;
+        //RectTransform sendChatTf;
+
+        private class ChatFlyObj : MonoBehaviour
+        {
+            public static Stack<ChatFlyObj> pool;
+
+            RectTransform rtf;
+            RectTransform rText;
+            Text text;
+            Shadow shadow;
+            float x = chatItemStart;
+            float y = Random.Range(chatItemMin, chatItemMax);
+
+            public static void AddChat(ChatData chat)
+            {
+                ChatFlyObj flyObj;
+                if (pool.Count > 0)
+                {
+                    flyObj = pool.Pop();
+                }
+                else
+                {
+                    GameObject chatItem = Instantiate(chatItemPrefab);
+                    Transform tf_chatItem = (RectTransform)chatItem.transform;
+                    tf_chatItem.SetParent(GuiQuquBattleSystem.instance.transform, false);
+                    chatItem.SetActive(true);
+                    flyObj = chatItem.AddComponent<ChatFlyObj>();
+                }
+                flyObj.SetData(chat);
+            }
+
+            private void Awake()
+            {
+                rText = (RectTransform)transform.Find("Text");
+                shadow = rText.GetComponent<Shadow>();
+                text = rText.GetComponent<Text>();
+                rtf = (RectTransform)transform;
+                gameObject.SetActive(true);
+            }
+
+            private void SetData(ChatData chat)
+            {
+                text.text = chat.name + "：" + chat.content;
+                SetColor(chat.ip);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rText);
+                rtf.sizeDelta = new Vector2(rtf.sizeDelta.x, rText.sizeDelta.y + 10);
+                x = chatItemStart;
+                y = Random.Range(chatItemMin, chatItemMax);
+                rtf.anchoredPosition = new Vector2(x, y);
+            }
+
+            void SetColor(string ip)
+            {
+                Color color = Tools.GetColor(ip);
+                Color shadowColor = Tools.GetShadowColor(color);
+                //text.color = shadowColor;
+                //text.text = $"<color=#{(color.r * 255).ToString("0x")}{(color.g * 255).ToString("0x")}{(color.b * 255).ToString("0x")}>✦</color>{text.text}";
+                shadow.effectColor = color;
+            }
+
+            private void Update()
+            {
+                if (x >= chatItemEnd)
+                {
+                    x -= Time.deltaTime * chatFlySpeed;
+                    rtf.anchoredPosition = new Vector2(x, y);
+                    if(x < chatItemEnd)
+                    {
+                        pool.Push(this);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -3013,14 +3195,14 @@ _transform.Find("QuquBattleBack/QuquBattleHolder/QuquBattle3/EnemyBattleQuqu3").
         static System.Random random;
         public static void InitSeed(int seed)
         {
-            // // Main.Logger.Log(" 种子: " + seed);
+            // // // // Main.Logger.Log(" 种子: " + seed);
             idx = 0;
             random = new System.Random(seed);
         }
         public static int Range(int a, int b)
         {
             int num = random.Next(a, b);
-            // // Main.Logger.Log(idx++ + " 随机数: " + num);
+            // // // // Main.Logger.Log(idx++ + " 随机数: " + num);
             return num;
         }
     }

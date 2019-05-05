@@ -158,7 +158,7 @@ namespace GuiQuquAdventure
             yield return null;
             while (true)
             {
-                yield return new WaitForSeconds(5);
+                yield return new WaitForSeconds(1);
                 bool open = false;
                 try
                 {
@@ -172,7 +172,7 @@ namespace GuiQuquAdventure
                 catch (Exception e)
                 {
                     open = false;
-                    throw;
+                    // Main.Logger.Log("error:"+e.Message);
                 }
                 if (open)
                 {

@@ -14,6 +14,7 @@ namespace GuiQuquAdventure
         public bool show_player;
         Text text;
         Shadow shadow;
+        int pos;
         //Transform tImage;
         //GameObject gImage;
         int[] last_image = new int[20];
@@ -26,6 +27,8 @@ namespace GuiQuquAdventure
             "<color=red>未准备</color>",
             "<color=red>确认赌注</color>",
             "<color=red>一切就绪</color>",
+            "<color=red>对战中</color>",
+            "<color=red>设置中</color>",
         };
         readonly static string[] bet_state_str = new string[]
         {
@@ -33,6 +36,8 @@ namespace GuiQuquAdventure
             "<color=red>未押注</color>",
             "<color=red>押{0}</color>",
             "<color=red>押{0}</color>",
+            "<color=red>观战中</color>",
+            "<color=red>设置中</color>",
         };
 
 
@@ -51,6 +56,28 @@ namespace GuiQuquAdventure
             tf.localScale = Vector3.one * 0.45f;
             tf.anchoredPosition = new Vector2(0, -80);
 #endif
+            Button btn = gameObject.GetComponent<Button>();
+            btn.onClick.AddListener(OnClickChair);
+        }
+
+
+
+        void OnClickChair()
+        {
+            // Main.Logger.Log("点击座位" + (!show_player) + " " + pos);
+            if (!show_player)
+            {
+                //QuquDesk.instance.no_operation = 0;
+                //PlayerData.self.desk_idx = desk_id;
+                PlayerData.self.ready = 0;
+                PlayerData.self.observer = pos < 2 ? 0 : 1;
+                //DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].chat_data = new List<ChatData>(); // 清空要进入的房间的聊天记录
+                QuquHall.instance.GetData(desk_pos: pos);
+            }
+            else
+            {
+                YesOrNoWindow.instance.SetYesOrNoWindow(-1, "注意!", "这个位置已经有人了！", false, true);
+            }
         }
 
         //float size = 0.3f;
@@ -75,8 +102,9 @@ namespace GuiQuquAdventure
         //}
 
 
-        public void SetData(PlayerData playerData)
+        public void SetData(PlayerData playerData,int i)
         {
+            pos = i;
             this.data = playerData;
             show_player = playerData.ip != "0";
             if (!show_player) // 空位
@@ -90,24 +118,42 @@ namespace GuiQuquAdventure
             {
                 if (playerData.observer==0) // 选手
                 {
-                    text.text = string.Format(name_format_str, playerData.name, ready_state_str[playerData.ready]);
+                    int ready = playerData.ready;
+                    if (ready == -1)
+                    {
+                        ready = 3;
+                    }
+                    else if (ready == -2)
+                    {
+                        ready = 4;
+                    }
+                    text.text = string.Format(name_format_str, playerData.player_name, ready_state_str[ready% ready_state_str.Length]);
                 }
                 else // 观战者
                 {
-                    string bet_player_name = bet_state_str[playerData.observer];
-                    if (playerData.observer > 1)
+                    int observer = playerData.observer;
+                    if (playerData.ready == -1)
+                    {
+                        observer = 4;
+                    }
+                    else if (playerData.ready == -2)
+                    {
+                        observer = 5;
+                    }
+                    string bet_player_name = bet_state_str[observer % bet_state_str.Length];
+                    if (playerData.observer > 1 && playerData.ready != -1)
                     {
                         PlayerData sel = QuquDesk.instance.GetPlayer(playerData.observer - 2);
                         if (sel.ip != "0")
                         {
-                            bet_player_name = string.Format(bet_player_name, sel.name);
+                            bet_player_name = string.Format(bet_player_name, sel.player_name);
                         }
                         else
                         {
                             bet_player_name = string.Format(bet_player_name, (playerData.observer == 2 ? "左" : "右") + "边选手");
                         }
                     }
-                    text.text = string.Format(name_format_str, playerData.name, bet_player_name);
+                    text.text = string.Format(name_format_str, playerData.player_name, bet_player_name);
                 }
                 SetColor(playerData.ip);
             }

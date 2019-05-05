@@ -47,7 +47,7 @@ namespace GuiQuquAdventure
                 PlayerData[] list = DataFile.instance.hall_data.room_data[PlayerData.self.level].player_data;
                 for (int i = 0; i < list.Length; i++)
                 {
-                    if(list[i].desk_idx == desk_id)
+                    if(list[i].desk_idx == desk_id && list[i].level == PlayerData.self.level && list[i].desk_pos == pos)
                     {
                         playerData = list[i];
                         break;
@@ -78,12 +78,12 @@ namespace GuiQuquAdventure
         {
             if (!show_player)
             {
-                QuquDesk.instance.no_operation = 0;
+                //QuquDesk.instance.no_operation = 0;
                 PlayerData.self.desk_idx = desk_id;
                 PlayerData.self.ready = 0;
                 PlayerData.self.observer = pos < 2 ? 0 : 1;
                 //DataFile.instance.hall_data.room_data[PlayerData.self.level].desk_data[desk_id].chat_data = new List<ChatData>(); // 清空要进入的房间的聊天记录
-                QuquHall.instance.GetData();
+                QuquHall.instance.GetData(desk_pos: pos);
             }
             else
             {

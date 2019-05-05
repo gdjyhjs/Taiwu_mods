@@ -631,7 +631,7 @@ namespace IllustratedHandbook
             // 临时新建一个Item获取ID以显示信息
             tips.name = "ActorItem," + DateFile.instance.MakeNewItem(int.Parse(OnHover.name.Split('|')[1]), -5713);
             tips.tag = "ActorItem";
-            WindowManage.instance.WindowSwitch(true, tips);
+            WindowManage.instance.WindowSwitch(true);
 
         }
         public void OnMouseExitDelegate(PointerEventData data)

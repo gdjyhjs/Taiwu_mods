@@ -18,8 +18,10 @@ namespace GuiQuquAdventure
         string ip;
         int desk_idx;
         int observer;
+        int level;
         Transform tImage;
         int[] last_image = new int[20];
+        float alpha = 1;
 #if !TAIWU_GAME
         ActorFace actorFace;
 #endif
@@ -71,19 +73,32 @@ namespace GuiQuquAdventure
                 Tools.UpdateFace(last_image, actorFace, playerData.age, playerData.gender, playerData.actorGenderChange, playerData.faceDate, playerData.faceColor, playerData.clotheId, true);
             }
 #endif
-            if (this.ip == playerData.ip && this.desk_idx == playerData.desk_idx && this.observer == playerData.observer)
+            if (this.ip == playerData.ip && this.desk_idx == playerData.desk_idx && this.observer == playerData.observer && this.level == playerData.level)
             {
                 return;
             }
 
-            text.text = playerData.name ;
-            if (playerData.desk_idx == -1)
+
+
+
+            text.text = playerData.player_name;
+            if (playerData.level == -1)
             {
-                text.text += "\n<size=30>(正在房间中闲逛)</size>";
+                alpha = .2f;
+                // // Main.Logger.Log(playerData.level+" "+ playerData.desk_idx+" "+ playerData.observer + "\n<size=30>(正在大厅中闲逛)</size>");
+                text.text += "\n<size=30>(正在大厅中闲逛)</size>";
+            }
+            else if (playerData.desk_idx == -1)
+            {
+                alpha = 1;
+                // // Main.Logger.Log(playerData.level + " " + playerData.desk_idx + " " + playerData.observer + $"\n<size=25>(正在{RoomObj.GetRoomLevelName(playerData.level)}蛐蛐房中闲逛)</size>");
+                text.text += $"\n<size=20>(正在{RoomObj.GetRoomLevelName(playerData.level)}蛐蛐房中闲逛)</size>";
             }
             else
             {
-                text.text += string.Format($"\n<size=25>(在{RoomDeskObj.GetDeskLevelName(playerData.desk_idx/10)}{(playerData.desk_idx % 10 + 1)}号桌</size>");
+                alpha = 1;
+                // // Main.Logger.Log(playerData.level + " " + playerData.desk_idx + " " + playerData.observer + $"\n<size=20>(在{RoomObj.GetRoomLevelName(playerData.level)}房{RoomDeskObj.GetDeskLevelName(playerData.desk_idx / 10)}{(playerData.desk_idx % 10 + 1)}桌中{(playerData.observer == 0 ? "对战" : "观战")})</size>");
+                text.text += string.Format($"\n<size=22>(在{RoomObj.GetRoomLevelName(playerData.level)}房{RoomDeskObj.GetDeskLevelName(playerData.desk_idx / 10)}{(playerData.desk_idx % 10 + 1)}桌中{(playerData.observer == 0?"对战":"观战")})</size>");
             }
 
             SetColor(playerData.ip);
@@ -99,8 +114,10 @@ namespace GuiQuquAdventure
         {
             Color color = Tools.GetColor(ip);
             Color shadowColor = Tools.GetShadowColor(color);
-            //text.color = shadowColor;
-            text.text = $"<color=#{(color.r*255).ToString("0x")}{(color.g * 255).ToString("0x")}{(color.b * 255).ToString("0x")}>✦</color>{text.text}" ;
+            Color newColor = text.color;
+            newColor.a = alpha;
+            text.color = newColor;
+            //text.text = $"<color=#{(color.r*255).ToString("0x")}{(color.g * 255).ToString("0x")}{(color.b * 255).ToString("0x")}>✦</color>{text.text}" ;
             shadow.effectColor = color;
         }
     }

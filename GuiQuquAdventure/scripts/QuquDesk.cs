@@ -22,8 +22,8 @@ namespace GuiQuquAdventure
         /// 无操作时间
         /// </summary>
         public float no_operation = 0;
-        float max_no_operation = 300;
-        int last_t;
+        //float max_no_operation = 300;
+        //int last_t;
         DeskData data;
         PlayerObj[] players;
         Image tLeftImage;
@@ -35,7 +35,16 @@ namespace GuiQuquAdventure
         Text tBattleDeskName;
         int my_idx = -1;
         PlayerData self;
+        string[] loves;
 
+        QuquPlace[] leftQuquCall = new QuquPlace[3];
+        QuquPlace[] rightQuquCall = new QuquPlace[3];
+        Text[] leftQuquName = new Text[3];
+        Text[] rightQuquName = new Text[3];
+        int[] leftQuquCallTime = new int[3];
+        int[] rightQuquCallTime = new int[3];
+        int[] leftQuquId = new int[3];
+        int[] rightQuquId = new int[3];
         private void Awake()
         {
             instance = this;
@@ -62,11 +71,59 @@ namespace GuiQuquAdventure
             rightBtn = bRightBtn.gameObject;
             tLeftImage = bLeftBtn.GetComponent<Image>();
             tRightImage = bRightBtn.GetComponent<Image>();
+
+
+            string[] ss = DateFile.instance.massageDate[8001][3].Split('|');
+            for (int i = 0; i < 3; i++)
+            {
+                GameObject ququ_sample = QuquBattleSystem.instance.transform.Find($"QuquBattleBack/QuquBattleHolder/QuquBattle{i + 1}/EnemyBattleQuqu{i + 1}").gameObject;
+
+                GameObject ququ = Instantiate(ququ_sample);
+                leftQuquCall[i] = ququ.GetComponent<QuquPlace>();
+                RectTransform tf_ququ = (RectTransform)ququ.transform;
+                tf_ququ.SetParent(transform, false);
+                tf_ququ.anchoredPosition = new Vector2(-850 - 575, -20 - 80 * i);
+                tf_ququ.localScale = new Vector3(.45f, .45f, .45f);
+                leftQuquName[i] = tf_ququ.Find($"EnemyQuquNameBack{i + 1}/EnemyQuquNameText{i + 1}").GetComponent<Text>();
+                Graphic[] gs = ququ.GetComponentsInChildren<Graphic>();
+                foreach (var item in gs)
+                {
+                    item.raycastTarget = false;
+                }
+                Text[] ts = ququ.GetComponentsInChildren<Text>();
+                foreach (var item in ts)
+                {
+                    if (item.text != ss[i + 2])
+                        item.text = "";
+                    item.transform.localScale = Vector3.one * 2;
+                }
+
+                GameObject ququ2 = Instantiate(ququ_sample);
+                rightQuquCall[i] = ququ2.GetComponent<QuquPlace>();
+                RectTransform tf_ququ2 = (RectTransform)ququ2.transform;
+                tf_ququ2.SetParent(transform, false);
+                tf_ququ2.anchoredPosition = new Vector2(-850, -20 - 80 * i);
+                tf_ququ2.localScale = new Vector3(.45f, .45f, .45f);
+                rightQuquName[i] = tf_ququ2.Find($"EnemyQuquNameBack{i + 1}/EnemyQuquNameText{i + 1}").GetComponent<Text>();
+                Graphic[] gs2 = ququ2.GetComponentsInChildren<Graphic>();
+                foreach (var item in gs2)
+                {
+                    item.raycastTarget = false;
+                }
+                Text[] ts2 = ququ2.GetComponentsInChildren<Text>();
+                foreach (var item in ts2)
+                {
+                    if (item.text != ss[i + 2])
+                        item.text = "";
+                    item.transform.localScale = Vector3.one * 2;
+                }
+            }
         }
 
         public void SetData(DeskData data)
         {
             this.data = data;
+            loves = new string[] { "", "" };
             // 玩家
             PlayerData[] playerDats = data.player_data;
             for (int i = 0; i < playerDats.Length; i++)
@@ -74,8 +131,9 @@ namespace GuiQuquAdventure
                 if (i < players.Length)
                 {
                     PlayerData player = playerDats[i];
-                    players[i].SetData(player);
-                    if (playerDats[i].ip == self.ip)
+                    players[i].SetData(player, i);
+
+                    if (player.ip == self.ip)
                     {
                         my_idx = i;
                     }
@@ -86,6 +144,34 @@ namespace GuiQuquAdventure
                         int bet_typ = player.bet_typ;
                         int bet_id = player.bet_id;
                         QuquHall.instance.SetBetUI(i, bet_typ, bet_id);
+                        if(player.ip != "0")
+                        {
+                            loves[i] = player.GetLoveQuquName();
+                        }
+
+                        if(player.ip != "0")
+                        {
+                            int[] callTime = i == 0 ? leftQuquCallTime : rightQuquCallTime;
+                            callTime = new int[3]
+                                    {
+                            Random.Range(0, 300),
+                            Random.Range(0, 300),
+                            Random.Range(0, 300)
+                                    };
+                            int[] ququId = i == 0 ? leftQuquId : rightQuquId;
+                            for (int k = 0; k < 3; k++)
+                            {
+                                ququId[k] = player.GetBattleQuquId(k, -10, 1);
+                            }
+                        }
+                        else
+                        {
+                            int[] ququId = i == 0 ? leftQuquId : rightQuquId;
+                            for (int k = 0; k < 3; k++)
+                            {
+                                ququId[k] = 0;
+                            }
+                        }
                     }
                 }
             }
@@ -110,6 +196,7 @@ namespace GuiQuquAdventure
                 hideBtn.SetActive(false);
                 showBtn.SetActive(true);
                 tImg.sprite = self.ready == 2 ? QuquHall.instance.sprite_x : QuquHall.instance.sprite_o;
+                tImg.transform.localScale = self.ready == 0 ? new Vector3(.5f, .5f, .5f) : Vector3.one;
                 //tBtn.text = ready_state_str[self.ready];
             }
             else // 观众
@@ -142,7 +229,11 @@ namespace GuiQuquAdventure
                     //tRightBtn.text = bet_player_name;
                     tRightImage.sprite = QuquHall.instance.sprite_o;
                 }
+                tLeftImage.transform.localScale = Vector3.one;
+                tRightImage.transform.localScale = Vector3.one;
             }
+
+            UpdateDeskDes(true);
         }
 
         void OnClickReady(int idx)
@@ -193,46 +284,89 @@ namespace GuiQuquAdventure
 
         void Update()
         {
-            if (!GuiQuquBattleSystem.instance.gameObject.activeSelf && self.observer == 0 && self.ready != 2 && players[(my_idx + 1) % 2].show_player)
+            //if (!GuiQuquBattleSystem.instance.gameObject.activeSelf && self.observer == 0 && self.ready != 2 && players[(my_idx + 1) % 2].show_player)
+            //{
+            //    no_operation += Time.deltaTime;
+            //    if (no_operation > max_no_operation)
+            //    {
+            //        no_operation = 0;
+            //        OnClickReady(my_idx);
+            //        UpdateDeskDes();
+            //    }
+            //}
+            //else
+            //{
+            //    no_operation = 0;
+            //    UpdateDeskDes();
+            //}
+
+
+            //ququCall
+            //ququCallTime
+            //callQuquIdx
+
+            for (int i = 0; i < 3; i++)
             {
-                no_operation += Time.deltaTime;
-                if (no_operation > max_no_operation)
+                if (leftQuquId[i] != 0)
                 {
-                    no_operation = 0;
-                    OnClickReady(my_idx);
-                    UpdateDeskDes();
+                    leftQuquCallTime[i] += 1 + Random.Range(0, 5);
+                    if (leftQuquCallTime[i] >= 1600 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(leftQuquId[i], 8)) * 300)
+                    {
+                        leftQuquCallTime[i] = Random.Range(0, 300);
+                        leftQuquCall[i].UpdateBattleQuquCall(leftQuquId[i]);
+                        leftQuquCall[i].CallvolumeRest(0.6f, 0.6f);
+                    }
+                    leftQuquName[i].text = "有只蛐蛐";
+                }
+                else
+                {
+                    leftQuquCallTime[i] = Random.Range(0, 300);
+                    leftQuquName[i].text = "没有蛐蛐";
+                }
+
+                if (rightQuquId[i] != 0)
+                {
+                    rightQuquCallTime[i] += 1 + Random.Range(0, 5);
+                    if (rightQuquCallTime[i] >= 1600 + DateFile.instance.ParseInt(DateFile.instance.GetItemDate(rightQuquId[i], 8)) * 300)
+                    {
+                        rightQuquCallTime[i] = Random.Range(0, 300);
+                        rightQuquCall[i].UpdateBattleQuquCall(rightQuquId[i]);
+                        rightQuquCall[i].CallvolumeRest(0.6f, 0.6f);
+                    }
+                    rightQuquName[i].text = "有只蛐蛐";
+                }
+                else
+                {
+                    rightQuquCallTime[i] = Random.Range(0, 300);
+                    rightQuquName[i].text = "没有蛐蛐";
                 }
             }
-            else
-            {
-                no_operation = 0;
-                UpdateDeskDes();
-            }
+
         }
 
         public void UpdateDeskDes(bool force = false)
         {
-            int t = (int)(max_no_operation - no_operation);
-            if(force || last_t != t)
-            {
-                last_t = t;
-                int desk_level = self.desk_idx / 10;
-                string desk_des = $"{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌";
-                if (QuquDesk.instance.no_operation > 0)
-                {
-                    switch (self.ready)
-                    {
-                        case 0:
-                            desk_des = $"{desk_des}\n请在{t}秒内确认!";
-                            break;
+            //int t = (int)(max_no_operation - no_operation);
+            //if (force || last_t != t)
+            //{
+            //    last_t = t;
+            int desk_level = self.desk_idx / 10;
+            string desk_des = $"\n\n\n\n{RoomObj.GetRoomLevelName(self.level)}蛐蛐房>{RoomDeskObj.GetDeskLevelName(desk_level)}{(self.desk_idx % 10 + 1)}号桌<size=22><color=red>\n\n{loves[0]}\n\n{loves[1]}</color></size>";
+            //    if (QuquDesk.instance.no_operation > 0)
+            //    {
+            //        switch (self.ready)
+            //        {
+            //            case 0:
+            //                desk_des = $"{desk_des}\n请在{t}秒内确认!";
+            //                break;
 
-                        case 1:
-                            desk_des = $"{desk_des}\n请在{t}秒内准备!";
-                            break;
-                    }
-                }
-                tBattleDeskName.text = desk_des;
-            }
+            //            case 1:
+            //                desk_des = $"{desk_des}\n请在{t}秒内准备!";
+            //                break;
+            //        }
+            //    }
+            tBattleDeskName.text = desk_des;
+            //}
         }
     }
 }
